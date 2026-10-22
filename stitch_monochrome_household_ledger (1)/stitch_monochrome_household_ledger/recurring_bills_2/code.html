@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ledger - Recurring Bills</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#626262",
+                        "on-primary-fixed": "#1b1b1b",
+                        "outline": "#7e7576",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-container": "#848484",
+                        "secondary-container": "#e1dfdf",
+                        "inverse-on-surface": "#f1f0f0",
+                        "tertiary-container": "#1a1c1c",
+                        "on-secondary-fixed-variant": "#464747",
+                        "surface-bright": "#faf9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "secondary": "#5e5e5e",
+                        "primary": "#000000",
+                        "primary-container": "#1b1b1b",
+                        "surface-container-high": "#e9e8e8",
+                        "secondary-fixed-dim": "#c7c6c6",
+                        "surface-container-low": "#f4f3f3",
+                        "on-tertiary-container": "#838484",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-primary-fixed-variant": "#474747",
+                        "background": "#faf9f9",
+                        "tertiary": "#000000",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#e2e2e2",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "inverse-primary": "#c6c6c6",
+                        "on-background": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#5e5e5e",
+                        "surface-container": "#eeeeed",
+                        "surface-container-highest": "#e3e2e2",
+                        "surface": "#faf9f9",
+                        "on-surface-variant": "#4c4546",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "tertiary-fixed": "#e2e2e2",
+                        "secondary-fixed": "#e4e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-variant": "#e3e2e2",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "outline-variant": "#cfc4c5",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "container-max": "1200px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "display": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-caps": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "label-mono": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Utility for minimalist scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e3e2e2;
+            border-radius: 4px;
+        }
+        
+        /* Subtle hatch pattern for savings/progress */
+        .hatch-pattern {
+            background-image: repeating-linear-gradient(
+                45deg,
+                #e3e2e2,
+                #e3e2e2 2px,
+                transparent 2px,
+                transparent 6px
+            );
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-container-lowest w-full top-0 sticky z-40">
+<div class="flex items-center justify-between px-gutter py-md max-w-container-max mx-auto">
+<!-- Leading: Avatar -->
+<button class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden flex-shrink-0 active:opacity-80 transition-opacity">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A minimalist black and white headshot of a user. The lighting is bright and high-key, creating a clean, modern aesthetic. The subject is well-lit against a stark white background, emphasizing crisp details and a serene, professional mood. The contrast is sharp, aligning with a high-end, disciplined financial brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5aMZrJhXnGWtnSoeFN48cJwcY6Qpog1ydn9AUNI-sO1iRqnbEa18CTnc2HxCYSrQp1DqshXm_NhfbsF0UItlU5BEV-f2_-85N8WcJBvGAXNLuRqpIWCv9H6ACOZIXTV27a0m8rPjSxz0FjBzOqbUosPG5fabsIuez6x2hS3ZyDnfi0jtMiubtU8l0K4xIMDFlvmRwB0aGYlpxNSUCsoF3GOCtK2BoNCggcT7zwBMWBZycIzF_6CpY"/>
+</button>
+<!-- Headline -->
+<h1 class="font-display text-headline-md font-bold tracking-tighter text-primary dark:text-on-background uppercase">LEDGER</h1>
+<!-- Trailing: Icon -->
+<button class="w-10 h-10 flex items-center justify-center text-primary dark:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full active:opacity-80 transition-opacity flex-shrink-0">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<!-- Desktop Navigation (Hidden on mobile) -->
+<nav class="hidden md:flex justify-center gap-xl pb-md max-w-container-max mx-auto px-gutter">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-caps text-label-caps uppercase" href="#">Dashboard</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-caps text-label-caps uppercase" href="#">Daily</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold border-t-2 border-primary pt-1 font-label-caps text-label-caps uppercase" href="#">Recurring</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-caps text-label-caps uppercase" href="#">Admin</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-caps text-label-caps uppercase" href="#">Savings</a>
+</nav>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-gutter py-xl">
+<!-- Header Section -->
+<div class="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-unit">Fixed Liabilities</h2>
+<p class="text-secondary font-body-md text-body-md">Manage your recurring operational costs.</p>
+</div>
+<!-- Quick Stats Bento -->
+<div class="grid grid-cols-2 gap-sm md:flex md:gap-lg bg-surface-container-low p-sm rounded-lg md:bg-transparent md:p-0 md:rounded-none border border-outline-variant md:border-none">
+<div class="bg-surface p-sm md:p-0 flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary mb-xs uppercase">Pending Total</span>
+<span class="font-label-mono text-label-mono text-primary text-lg font-bold">$345.00</span>
+</div>
+<div class="bg-surface p-sm md:p-0 flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary mb-xs uppercase">Next Due</span>
+<span class="font-body-md text-body-md text-primary font-medium">Oct 12</span>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="flex justify-between items-center mb-md pb-sm border-b border-surface-variant">
+<div class="flex gap-sm">
+<button class="px-md py-sm bg-primary text-on-primary font-label-caps text-label-caps uppercase hover:bg-secondary transition-colors">Add Recurring</button>
+<button class="px-md py-sm border border-primary text-primary font-label-caps text-label-caps uppercase hover:bg-surface-container-low transition-colors hidden sm:block">Filter</button>
+</div>
+<div class="flex gap-md font-label-caps text-label-caps text-secondary">
+<span>View: List</span>
+</div>
+</div>
+<!-- Recurring Bills List -->
+<div class="flex flex-col">
+<!-- List Header (Desktop) -->
+<div class="hidden md:grid grid-cols-12 gap-sm py-sm border-b border-surface-variant text-secondary font-label-caps text-label-caps uppercase mb-sm">
+<div class="col-span-1">Status</div>
+<div class="col-span-5">Liability</div>
+<div class="col-span-2">Category</div>
+<div class="col-span-2">Due Date</div>
+<div class="col-span-2 text-right">Amount</div>
+</div>
+<!-- Item: Pending (Gas) -->
+<div class="group relative flex flex-col md:grid md:grid-cols-12 gap-y-unit md:gap-sm py-md border-b border-surface-container-high hover:bg-surface-container-lowest transition-colors items-start md:items-center">
+<!-- Checkbox / Status -->
+<div class="col-span-1 flex items-center gap-sm">
+<label class="relative flex items-center cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 border border-outline rounded-sm peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[14px] text-white opacity-0 peer-checked:opacity-100 transition-opacity icon-fill">check</span>
+</div>
+</label>
+<span class="md:hidden font-label-caps text-label-caps text-secondary uppercase">Pending</span>
+</div>
+<!-- Description -->
+<div class="col-span-5 w-full flex flex-col pl-7 md:pl-0">
+<span class="font-body-md text-body-md text-primary font-medium">National Grid Gas</span>
+<span class="font-body-sm text-secondary md:hidden mt-xs">Due: Oct 12</span>
+</div>
+<!-- Category Chip -->
+<div class="col-span-2 pl-7 md:pl-0">
+<span class="inline-flex items-center px-2 py-1 bg-surface-container-low text-secondary font-label-caps text-[10px] uppercase tracking-wider rounded-sm">UTILITIES</span>
+</div>
+<!-- Due Date (Desktop) -->
+<div class="col-span-2 hidden md:block">
+<span class="font-body-md text-body-md text-primary">Oct 12</span>
+</div>
+<!-- Amount -->
+<div class="col-span-2 text-right w-full md:w-auto absolute right-0 top-md md:relative md:top-auto">
+<span class="font-label-mono text-label-mono text-primary font-bold">$124.50</span>
+</div>
+</div>
+<!-- Item: Pending (Mobile) -->
+<div class="group relative flex flex-col md:grid md:grid-cols-12 gap-y-unit md:gap-sm py-md border-b border-surface-container-high hover:bg-surface-container-lowest transition-colors items-start md:items-center">
+<div class="col-span-1 flex items-center gap-sm">
+<label class="relative flex items-center cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 border border-outline rounded-sm peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[14px] text-white opacity-0 peer-checked:opacity-100 transition-opacity icon-fill">check</span>
+</div>
+</label>
+<span class="md:hidden font-label-caps text-label-caps text-secondary uppercase">Pending</span>
+</div>
+<div class="col-span-5 w-full flex flex-col pl-7 md:pl-0">
+<span class="font-body-md text-body-md text-primary font-medium">Verizon Wireless</span>
+<span class="font-body-sm text-secondary md:hidden mt-xs">Due: Oct 15</span>
+</div>
+<div class="col-span-2 pl-7 md:pl-0">
+<span class="inline-flex items-center px-2 py-1 bg-surface-container-low text-secondary font-label-caps text-[10px] uppercase tracking-wider rounded-sm">MOBILE</span>
+</div>
+<div class="col-span-2 hidden md:block">
+<span class="font-body-md text-body-md text-primary">Oct 15</span>
+</div>
+<div class="col-span-2 text-right w-full md:w-auto absolute right-0 top-md md:relative md:top-auto">
+<span class="font-label-mono text-label-mono text-primary font-bold">$85.00</span>
+</div>
+</div>
+<!-- Item: Paid (Electricity) -->
+<div class="group relative flex flex-col md:grid md:grid-cols-12 gap-y-unit md:gap-sm py-md border-b border-surface-container-high items-start md:items-center opacity-60">
+<div class="col-span-1 flex items-center gap-sm">
+<label class="relative flex items-center cursor-pointer">
+<input checked="" class="peer sr-only" disabled="" type="checkbox"/>
+<div class="w-5 h-5 border border-primary bg-primary rounded-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-white icon-fill">check</span>
+</div>
+</label>
+<span class="md:hidden font-label-caps text-label-caps text-primary uppercase">Paid</span>
+</div>
+<div class="col-span-5 w-full flex flex-col pl-7 md:pl-0">
+<span class="font-body-md text-body-md text-primary font-medium line-through">ConEdison Electric</span>
+<span class="font-body-sm text-secondary md:hidden mt-xs">Due: Oct 01</span>
+</div>
+<div class="col-span-2 pl-7 md:pl-0">
+<span class="inline-flex items-center px-2 py-1 bg-surface-container-low text-secondary font-label-caps text-[10px] uppercase tracking-wider rounded-sm">UTILITIES</span>
+</div>
+<div class="col-span-2 hidden md:block">
+<span class="font-body-md text-body-md text-primary line-through">Oct 01</span>
+</div>
+<div class="col-span-2 text-right w-full md:w-auto absolute right-0 top-md md:relative md:top-auto">
+<span class="font-label-mono text-label-mono text-secondary font-medium line-through">$135.50</span>
+</div>
+</div>
+<!-- Item: Paid (Weekly Petrol) -->
+<div class="group relative flex flex-col md:grid md:grid-cols-12 gap-y-unit md:gap-sm py-md border-b border-surface-container-high items-start md:items-center opacity-60">
+<div class="col-span-1 flex items-center gap-sm">
+<label class="relative flex items-center cursor-pointer">
+<input checked="" class="peer sr-only" disabled="" type="checkbox"/>
+<div class="w-5 h-5 border border-primary bg-primary rounded-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-white icon-fill">check</span>
+</div>
+</label>
+<span class="md:hidden font-label-caps text-label-caps text-primary uppercase">Paid</span>
+</div>
+<div class="col-span-5 w-full flex flex-col pl-7 md:pl-0">
+<span class="font-body-md text-body-md text-primary font-medium line-through">Weekly Petrol (Estimate)</span>
+<span class="font-body-sm text-secondary md:hidden mt-xs">Due: Oct 05</span>
+</div>
+<div class="col-span-2 pl-7 md:pl-0">
+<span class="inline-flex items-center px-2 py-1 bg-surface-container-low text-secondary font-label-caps text-[10px] uppercase tracking-wider rounded-sm">TRANSPORT</span>
+</div>
+<div class="col-span-2 hidden md:block">
+<span class="font-body-md text-body-md text-primary line-through">Oct 05</span>
+</div>
+<div class="col-span-2 text-right w-full md:w-auto absolute right-0 top-md md:relative md:top-auto">
+<span class="font-label-mono text-label-mono text-secondary font-medium line-through">$60.00</span>
+</div>
+</div>
+</div>
+<!-- Projection / Insights (Bento block) -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="md:col-span-2 bg-surface border border-outline-variant p-lg flex flex-col">
+<h3 class="font-label-caps text-label-caps text-secondary uppercase mb-md">Monthly Run Rate</h3>
+<div class="w-full h-32 hatch-pattern border border-surface-variant relative flex items-end overflow-hidden group">
+<!-- Simple CSS bar chart representation -->
+<div class="w-1/4 h-[80%] bg-surface-variant border-r border-background hover:bg-outline transition-colors relative">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-mono text-[10px] text-primary opacity-0 group-hover:opacity-100">80%</span>
+</div>
+<div class="w-1/4 h-[60%] bg-surface-variant border-r border-background hover:bg-outline transition-colors relative"></div>
+<div class="w-1/4 h-[40%] bg-surface-variant border-r border-background hover:bg-outline transition-colors relative"></div>
+<div class="w-1/4 h-[90%] bg-primary relative group-hover:opacity-90 transition-opacity">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-mono text-[10px] text-primary font-bold">OCT</span>
+</div>
+</div>
+</div>
+<div class="bg-primary text-on-primary p-lg flex flex-col justify-between">
+<div>
+<h3 class="font-label-caps text-label-caps text-surface-variant uppercase mb-sm">Commitment Total</h3>
+<p class="font-body-md text-body-md text-surface-variant opacity-80 mb-md">Total expected outflow for fixed liabilities this period.</p>
+</div>
+<div class="font-label-mono text-headline-lg-mobile md:text-headline-lg font-bold">
+                    $405.00
+                </div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface dark:bg-surface-container-lowest px-sm pb-md pt-sm border-t border-outline-variant dark:border-outline z-50">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">dashboard</span>
+<span class="font-label-caps text-[10px] uppercase">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">receipt_long</span>
+<span class="font-label-caps text-[10px] uppercase">Daily</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold border-t-2 border-primary pt-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px] icon-fill">calendar_month</span>
+<span class="font-label-caps text-[10px] uppercase">Recurring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">admin_panel_settings</span>
+<span class="font-label-caps text-[10px] uppercase">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">savings</span>
+<span class="font-label-caps text-[10px] uppercase">Savings</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for checkboxes to toggle line-through on the parent row texts
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            if(!checkbox.disabled) {
+                checkbox.addEventListener('change', function() {
+                    const row = this.closest('.group');
+                    const textElements = row.querySelectorAll('.font-body-md, .font-label-mono');
+                    
+                    if (this.checked) {
+                        row.classList.add('opacity-60');
+                        textElements.forEach(el => el.classList.add('line-through', 'text-secondary'));
+                        textElements.forEach(el => el.classList.remove('text-primary'));
+                        
+                        // Update status text on mobile
+                        const statusText = row.querySelector('.col-span-1 span:not(.material-symbols-outlined)');
+                        if(statusText) {
+                            statusText.textContent = 'PAID';
+                            statusText.classList.replace('text-secondary', 'text-primary');
+                        }
+                    } else {
+                        row.classList.remove('opacity-60');
+                        textElements.forEach(el => el.classList.remove('line-through', 'text-secondary'));
+                        textElements.forEach(el => {
+                            if(!el.classList.contains('text-secondary-forced')) { // simple logic, assuming previous primary
+                                el.classList.add('text-primary');
+                            }
+                        });
+                        
+                        const statusText = row.querySelector('.col-span-1 span:not(.material-symbols-outlined)');
+                        if(statusText) {
+                            statusText.textContent = 'PENDING';
+                            statusText.classList.replace('text-primary', 'text-secondary');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body></html>

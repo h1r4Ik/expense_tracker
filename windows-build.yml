@@ -1,0 +1,227 @@
+name: Build and Auto Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # 1. Prepare calculates the version and creates the empty Release immediately
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.app_version.outputs.version }}
+      tag: ${{ steps.app_version.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from pubspec.yaml
+        id: app_version
+        shell: bash
+        run: |
+          VERSION_LINE=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version:[[:space:]]*//')
+          VERSION="${VERSION_LINE%%+*}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag if missing
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const tag = '${{ steps.app_version.outputs.tag }}';
+            const sha = context.sha;
+
+            try {
+              await github.rest.git.getRef({
+                owner,
+                repo,
+                ref: `tags/${tag}`
+              });
+            } catch (error) {
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/tags/${tag}`,
+                sha
+              });
+            }
+
+      - name: Create Empty GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.app_version.outputs.tag }}
+          name: Release ${{ steps.app_version.outputs.tag }}
+          generate_release_notes: true
+          make_latest: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 2. Build Android and upload DIRECTLY to the Release (Bypassing Artifacts)
+  build-android:
+    runs-on: ubuntu-latest
+    needs: prepare
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create .env from GitHub Secrets
+        shell: bash
+        env:
+          GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+          GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
+          GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+          GEMINI_API_KEY_6: ${{ secrets.GEMINI_API_KEY_6 }}
+          VISION_API_KEY_1: ${{ secrets.VISION_API_KEY_1 }}
+          UPDATE_API: ${{ secrets.UPDATE_API }}
+        run: |
+          if [[ -z "${GEMINI_API_KEY_1:-}${GEMINI_API_KEY_2:-}${GEMINI_API_KEY_3:-}${GEMINI_API_KEY_4:-}${GEMINI_API_KEY_5:-}${GEMINI_API_KEY_6:-}${VISION_API_KEY_1:-}" ]]; then
+            echo "Missing API secrets for build. Add at least one Gemini or Vision key in GitHub Secrets."
+            exit 1
+          fi
+
+          cat > .env <<EOF
+          GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
+          GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
+          GEMINI_API_KEY_3=${GEMINI_API_KEY_3}
+          GEMINI_API_KEY_4=${GEMINI_API_KEY_4}
+          GEMINI_API_KEY_5=${GEMINI_API_KEY_5}
+          GEMINI_API_KEY_6=${GEMINI_API_KEY_6}
+          VISION_API_KEY_1=${VISION_API_KEY_1}
+          UPDATE_API=${UPDATE_API}
+          EOF
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Configure Android signing
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "Android signing secrets are missing."
+            exit 1
+          fi
+          mkdir -p android
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          printf "storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=../upload-keystore.jks\n" "$ANDROID_KEYSTORE_PASSWORD" "$ANDROID_KEY_PASSWORD" "$ANDROID_KEY_ALIAS" > android/key.properties
+
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Build Android APK
+        run: flutter build apk --split-per-abi --release
+
+      - name: Prepare APK
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release-assets/e-akshar-${{ needs.prepare.outputs.version }}.apk"
+
+      - name: Upload APK directly to GitHub Release (NO ARTIFACTS USED)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          prerelease: true
+          files: release-assets/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 3. Build Windows and upload DIRECTLY to the Release (Bypassing Artifacts)
+  build-windows:
+    runs-on: windows-latest
+    needs: prepare
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create .env from GitHub Secrets
+        shell: bash
+        env:
+          GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+          GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
+          GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+          GEMINI_API_KEY_6: ${{ secrets.GEMINI_API_KEY_6 }}
+          VISION_API_KEY_1: ${{ secrets.VISION_API_KEY_1 }}
+          UPDATE_API: ${{ secrets.UPDATE_API }}
+        run: |
+          if [[ -z "${GEMINI_API_KEY_1:-}${GEMINI_API_KEY_2:-}${GEMINI_API_KEY_3:-}${GEMINI_API_KEY_4:-}${GEMINI_API_KEY_5:-}${GEMINI_API_KEY_6:-}${VISION_API_KEY_1:-}" ]]; then
+            echo "Missing API secrets for build."
+            exit 1
+          fi
+          cat > .env <<EOF
+          GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
+          GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
+          GEMINI_API_KEY_3=${GEMINI_API_KEY_3}
+          GEMINI_API_KEY_4=${GEMINI_API_KEY_4}
+          GEMINI_API_KEY_5=${GEMINI_API_KEY_5}
+          GEMINI_API_KEY_6=${GEMINI_API_KEY_6}
+          VISION_API_KEY_1=${VISION_API_KEY_1}
+          UPDATE_API=${UPDATE_API}
+          EOF
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Download Visual C++ Redistributable
+        shell: bash
+        run: curl -sL "https://aka.ms/vs/17/release/vc_redist.x64.exe" -o vc_redist.x64.exe
+
+      - name: Compile Windows Installer
+        run: iscc /DMyAppVersion="${{ needs.prepare.outputs.version }}" installer.iss
+
+      - name: Prepare Windows Release
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp installer/e_akshar_setup.exe release-assets/e-akshar-windows-${{ needs.prepare.outputs.version }}.exe
+
+      - name: Upload EXE directly to GitHub Release (NO ARTIFACTS USED)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          prerelease: true
+          files: release-assets/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

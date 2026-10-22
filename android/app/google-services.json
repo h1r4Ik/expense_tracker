@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "339947750870",
+    "project_id": "expense-63495",
+    "storage_bucket": "expense-63495.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339947750870:android:fd7c69950bbfdf3ae79077",
+        "android_client_info": {
+          "package_name": "com.example.expense"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2hhp0a1mPybaBWOrTFFPNFYcmFvhD25A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

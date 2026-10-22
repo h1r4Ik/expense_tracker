@@ -1,0 +1,189 @@
+// ignore_for_file: prefer_initializing_formals
+
+import 'dart:async';
+import 'package:flutter/material.dart';
+import '../../data/models/group_model.dart';
+import '../../data/repositories/group_repository.dart';
+
+class GroupProvider extends ChangeNotifier {
+  final GroupRepository _repo;
+
+  List<GroupModel> _groups = [];
+  String? _activeGroupId;
+  bool _isLoading = false;
+  String? _error;
+
+  GroupProvider({required GroupRepository repo}) : _repo = repo;
+
+  List<GroupModel> get groups => List.unmodifiable(_groups);
+  String? get activeGroupId => _activeGroupId;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  // Backward-compatible family aliases
+  List<GroupModel> get families => groups;
+  String? get activeFamilyId => _activeGroupId;
+  GroupModel? get activeFamily => activeGroup;
+
+  GroupModel? get activeGroup {
+    if (_activeGroupId == null) return null;
+    try {
+      return _groups.firstWhere((g) => g.id == _activeGroupId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> loadGroups(String accountId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _groups = await _repo.getCachedGroups(accountId);
+      _activeGroupId = await _repo.getActiveGroupId(accountId);
+
+      // Try fetching remote groups in background
+      try {
+        final remoteGroups = await _repo.fetchRemoteGroups();
+        if (remoteGroups.isNotEmpty) {
+          // Merge remote into local
+          for (final remote in remoteGroups) {
+            final idx = _groups.indexWhere((g) => g.id == remote.id);
+            if (idx >= 0) {
+              _groups[idx] = remote;
+            } else {
+              _groups.add(remote);
+            }
+          }
+          await _repo.saveGroups(accountId, _groups);
+        }
+      } catch (_) {
+        // Offline — use cached data
+      }
+    } catch (e) {
+      _error = e.toString();
+      debugPrint('GroupProvider.loadGroups error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Backward compatibility alias
+  Future<void> loadFamilies(String accountId) => loadGroups(accountId);
+
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  Future<GroupModel> createGroup(
+    String name, {
+    String? description,
+    String? creatorId,
+    String? creatorName,
+    String? accountId,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final group = await _repo.createGroup(
+        name,
+        description: description,
+        creatorId: creatorId,
+        creatorName: creatorName,
+        accountId: accountId,
+      );
+      final idx = _groups.indexWhere((g) => g.id == group.id);
+      if (idx >= 0) {
+        _groups[idx] = group;
+      } else {
+        _groups.add(group);
+      }
+      _activeGroupId = group.id;
+      notifyListeners();
+      return group;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Backward compatibility alias
+  Future<GroupModel> createFamily(
+    String name, {
+    String? description,
+    String? creatorId,
+    String? creatorName,
+    String? accountId,
+  }) =>
+      createGroup(
+        name,
+        description: description,
+        creatorId: creatorId,
+        creatorName: creatorName,
+        accountId: accountId,
+      );
+
+  Future<GroupModel> joinByCode(
+    String code, {
+    String? userId,
+    String? userName,
+    String? accountId,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final group = await _repo.joinByCode(
+        code,
+        userId: userId,
+        userName: userName,
+        accountId: accountId,
+      );
+      final idx = _groups.indexWhere((g) => g.id == group.id);
+      if (idx >= 0) {
+        _groups[idx] = group;
+      } else {
+        _groups.add(group);
+      }
+      _activeGroupId = group.id;
+      notifyListeners();
+      return group;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> setActiveGroup(String accountId, String? groupId) async {
+    _activeGroupId = groupId;
+    await _repo.setActiveGroupId(accountId, groupId);
+    notifyListeners();
+  }
+
+  // Backward compatibility alias
+  Future<void> setActiveFamily(String accountId, String? familyId) =>
+      setActiveGroup(accountId, familyId);
+
+  Future<void> saveGroups(String accountId) async {
+    await _repo.saveGroups(accountId, _groups);
+  }
+
+  // Backward compatibility alias
+  Future<void> saveFamilies(String accountId) => saveGroups(accountId);
+}
+
+typedef FamilyProvider = GroupProvider;

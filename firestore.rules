@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Users collection and subcollections (personal transactions)
+    match /users/{userId} {
+      allow read, write: if !isAuthenticated() || request.auth.uid == userId;
+
+      match /{allSubcollections=**} {
+        allow read, write: if !isAuthenticated() || request.auth.uid == userId;
+      }
+    }
+
+    // Families collection (shared groups and family transactions)
+    match /families/{familyId} {
+      allow read, write: if true;
+
+      match /{allSubcollections=**} {
+        allow read, write: if true;
+      }
+    }
+
+    // Expense shares collection
+    match /expenseShares/{shareId} {
+      allow read, write: if true;
+    }
+  }
+}

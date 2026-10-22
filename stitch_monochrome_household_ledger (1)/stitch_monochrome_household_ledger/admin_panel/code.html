@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ledger - Admin Control Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for minimalist look */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e3e2e2; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cfc4c5; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#626262",
+                        "on-primary-fixed": "#1b1b1b",
+                        "outline": "#7e7576",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-container": "#848484",
+                        "secondary-container": "#e1dfdf",
+                        "inverse-on-surface": "#f1f0f0",
+                        "tertiary-container": "#1a1c1c",
+                        "on-secondary-fixed-variant": "#464747",
+                        "surface-bright": "#faf9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "secondary": "#5e5e5e",
+                        "primary": "#000000",
+                        "primary-container": "#1b1b1b",
+                        "surface-container-high": "#e9e8e8",
+                        "secondary-fixed-dim": "#c7c6c6",
+                        "surface-container-low": "#f4f3f3",
+                        "on-tertiary-container": "#838484",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-primary-fixed-variant": "#474747",
+                        "background": "#faf9f9",
+                        "tertiary": "#000000",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#e2e2e2",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "inverse-primary": "#c6c6c6",
+                        "on-background": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#5e5e5e",
+                        "surface-container": "#eeeeed",
+                        "surface-container-highest": "#e3e2e2",
+                        "surface": "#faf9f9",
+                        "on-surface-variant": "#4c4546",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "tertiary-fixed": "#e2e2e2",
+                        "secondary-fixed": "#e4e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-variant": "#e3e2e2",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "outline-variant": "#cfc4c5",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "container-max": "1200px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "display": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-caps": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "label-mono": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen font-body-md selection:bg-surface-dim">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-container-lowest w-full top-0 sticky border-b border-outline-variant dark:border-outline z-40">
+<div class="flex items-center justify-between px-gutter py-md max-w-container-max mx-auto">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A minimalist, high-contrast monochrome portrait avatar of a user. The lighting is studio-quality, casting sharp shadows against a pristine white background. The subject is wearing dark clothing, creating a stark silhouette effect suitable for an executive financial dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUKLf0PRsPyJ4JDvlPXYS_jhmDTLewyqh95jGwCAyQKtjg8iTvtNubBHLvRaF5WHKXos0OA8UxDfbwVsUM9yJhnU3lmjgvWHrUU31WF1Hf2eaTTQxnzDklpxSK0Y_mhDH5W3Ox9NOIziB5Ky0tQmGxtMO6-DeLOFKYEYrV1VSBknX4I_gK1J6oEL4cql0M9mbGVHywofwY2LQUjjIRAbUyy8lJogfx82JpruMwzxfIalLUneYZt4g3"/>
+</div>
+</div>
+<h1 class="font-display text-headline-md font-bold tracking-tighter text-primary dark:text-on-background uppercase">
+                LEDGER
+            </h1>
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full p-sm active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-container-max mx-auto px-gutter py-xl pb-[100px] md:pb-xl flex flex-col gap-xl">
+<header>
+<h2 class="font-display text-display text-primary tracking-tight">Admin Control Panel</h2>
+<p class="font-body-lg text-secondary mt-sm">Manage household configurations and monitor expenditure distributions.</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Monthly Budget Settings (Prominent Left) -->
+<section class="lg:col-span-4 border border-outline-variant bg-surface-container-lowest p-lg relative group overflow-hidden">
+<div class="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="background: radial-gradient(circle at top right, #f4f3f3 0%, transparent 50%);"></div>
+<h3 class="font-label-caps text-secondary mb-xl tracking-widest uppercase">Global Parameters</h3>
+<div class="flex flex-col gap-xl">
+<div class="group/input">
+<label class="block font-label-caps text-on-surface-variant mb-xs" for="monthly-budget">Master Monthly Budget</label>
+<div class="relative flex items-center">
+<span class="absolute left-0 font-label-mono text-secondary text-headline-md pointer-events-none">$</span>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary font-label-mono text-headline-lg pl-8 py-sm px-0 transition-colors bg-transparent" id="monthly-budget" type="text" value="8,500.00"/>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-on-surface-variant mb-md">Allocation Strategy</label>
+<div class="flex flex-wrap gap-sm">
+<span class="inline-flex items-center px-3 py-1 bg-surface-container-highest font-label-caps text-primary border border-outline-variant cursor-pointer hover:bg-surface-dim transition-colors">PROPORTIONAL</span>
+<span class="inline-flex items-center px-3 py-1 bg-surface-container-lowest font-label-caps text-secondary border border-outline-variant cursor-pointer hover:bg-surface-container-high transition-colors">FIXED LIMITS</span>
+</div>
+</div>
+<button class="mt-auto w-full bg-primary text-on-primary py-md font-label-caps tracking-widest hover:bg-inverse-surface transition-colors">
+                        SAVE CONFIGURATION
+                    </button>
+</div>
+</section>
+<!-- Spending by Member Chart (Visual Right) -->
+<section class="lg:col-span-8 border border-outline-variant bg-surface-container-lowest p-lg flex flex-col">
+<div class="flex justify-between items-center mb-xl">
+<h3 class="font-label-caps text-secondary tracking-widest uppercase">Expenditure Distribution</h3>
+<div class="flex gap-sm">
+<span class="font-label-caps text-on-surface-variant cursor-pointer hover:text-primary transition-colors">MTD</span>
+<span class="font-label-caps text-primary font-bold cursor-pointer">YTD</span>
+</div>
+</div>
+<div class="flex-grow flex flex-col justify-end gap-md pt-xl">
+<!-- Chart Row 1 -->
+<div class="flex items-center gap-md">
+<div class="w-24 text-right">
+<span class="font-label-caps text-primary block truncate">ALEX</span>
+<span class="font-label-mono text-secondary text-[10px]">$4,250</span>
+</div>
+<div class="flex-grow h-8 bg-surface-container-high relative">
+<div class="absolute top-0 left-0 h-full bg-primary" style="width: 65%;"></div>
+<!-- Hatching pattern for target -->
+<div class="absolute top-0 left-0 h-full border-r-2 border-primary border-dashed" style="width: 75%; opacity: 0.3;"></div>
+</div>
+<div class="w-16">
+<span class="font-label-mono text-primary block">65%</span>
+</div>
+</div>
+<!-- Chart Row 2 -->
+<div class="flex items-center gap-md">
+<div class="w-24 text-right">
+<span class="font-label-caps text-primary block truncate">JORDAN</span>
+<span class="font-label-mono text-secondary text-[10px]">$2,100</span>
+</div>
+<div class="flex-grow h-8 bg-surface-container-high relative">
+<div class="absolute top-0 left-0 h-full bg-surface-tint" style="width: 32%;"></div>
+</div>
+<div class="w-16">
+<span class="font-label-mono text-primary block">32%</span>
+</div>
+</div>
+<!-- Chart Row 3 -->
+<div class="flex items-center gap-md">
+<div class="w-24 text-right">
+<span class="font-label-caps text-primary block truncate">SHARED</span>
+<span class="font-label-mono text-secondary text-[10px]">$850</span>
+</div>
+<div class="flex-grow h-8 bg-surface-container-high relative">
+<div class="absolute top-0 left-0 h-full bg-outline" style="width: 15%;"></div>
+</div>
+<div class="w-16">
+<span class="font-label-mono text-primary block">15%</span>
+</div>
+</div>
+</div>
+<div class="mt-md border-t border-outline-variant pt-sm flex justify-between">
+<span class="font-label-caps text-secondary text-[10px]">DASHED LINE = TARGET CAP</span>
+<span class="font-label-mono text-secondary text-[10px]">TOTAL: $7,200 / $8,500</span>
+</div>
+</section>
+<!-- Family Member Management (Full Width List) -->
+<section class="lg:col-span-12 border border-outline-variant bg-surface-container-lowest">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<h3 class="font-label-caps text-secondary tracking-widest uppercase">Entity Roster</h3>
+<button class="flex items-center gap-xs text-primary hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="font-label-caps">PROVISION ENTITY</span>
+</button>
+</div>
+<div class="flex flex-col">
+<!-- Member Item -->
+<div class="flex items-center justify-between p-md border-b border-surface-container-highest hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-dim flex items-center justify-center border border-outline-variant overflow-hidden">
+<img alt="Alex" class="w-full h-full object-cover" data-alt="A minimalist monochrome portrait avatar of user Alex. The lighting is harsh and architectural, casting deep shadows on one side of the face. The background is a clean, neutral gray, fitting seamlessly into a highly disciplined, monochromatic UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb-jTCdt96mDzTUTuxXj43L00XksGs6QFUUxUpWs0JrYyjdO6RjrMFPeqCm-_D4erqWZtuhPCKzrjGP_eVUezLOCBS-YDDlOPq8E35qqcqedfaBv4-FTWH8hvv3L1TWWxWSp-1mzAGz14W168xARLu77cpnSZVQrQb91Ibl2NBD15FY3JKA_SXJ4cWiVeBw7gr_zmcA8ag5E3ZXNIa6oZ6EkbyiIUI96uX9_Oua1XAQrmwluulSQ4m"/>
+</div>
+<div>
+<span class="font-body-md font-bold text-primary block">Alex (Head)</span>
+<span class="font-label-mono text-secondary">ID: 001-A</span>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+<span class="hidden sm:inline-flex items-center px-2 py-0.5 bg-primary text-on-primary font-label-caps text-[10px]">ADMIN</span>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+<!-- Member Item -->
+<div class="flex items-center justify-between p-md border-b border-surface-container-highest hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-dim flex items-center justify-center border border-outline-variant overflow-hidden">
+<img alt="Jordan" class="w-full h-full object-cover" data-alt="A minimalist monochrome portrait avatar of user Jordan. Shot in a high-key lighting setup with a pure white background. The subject is looking directly at the camera with a neutral expression, embodying the quiet, functional aesthetic of a premium ledger app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD5-68edZFejzHuhMyg2Xfc8zzcykdoVljbfPWsaFHeHG42AzTXKOAmXIFNjAfp4wrHo_7JpTcstDWJAXh_YGArtI4CXuOqNd6oXg5KrVUmGBK2jPi4rmSSr7z5H8yfP2T15GvFyZQ3gPPNsa6Ppf5Ueq2s_xAK9dm-IqaHFDz-hr5KPynGEt3dp3DIFxS0G_iObZRgw1qGllE50kY0gC99jPRPuBEhtVb9htEcl8acwmefl3G4fvH"/>
+</div>
+<div>
+<span class="font-body-md font-bold text-primary block">Jordan</span>
+<span class="font-label-mono text-secondary">ID: 002-J</span>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+<span class="hidden sm:inline-flex items-center px-2 py-0.5 bg-surface-container-highest border border-outline-variant text-primary font-label-caps text-[10px]">MEMBER</span>
+<div class="flex gap-sm opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">block</span>
+</button>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Member Item (Shared/Virtual) -->
+<div class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center border border-outline border-dashed">
+<span class="material-symbols-outlined text-outline">group</span>
+</div>
+<div>
+<span class="font-body-md font-bold text-primary block">Shared Expenses</span>
+<span class="font-label-mono text-secondary">VIRTUAL</span>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+<span class="hidden sm:inline-flex items-center px-2 py-0.5 bg-transparent border border-outline-variant text-secondary font-label-caps text-[10px]">BUCKET</span>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface dark:bg-surface-container-lowest px-sm pb-md pt-sm border-t border-outline-variant dark:border-outline z-50">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined mb-1">receipt_long</span>
+<span class="font-label-caps text-label-caps">Daily</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined mb-1">calendar_month</span>
+<span class="font-label-caps text-label-caps">Recurring</span>
+</button>
+<!-- Active Item: Admin -->
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold border-t-2 border-primary pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined fill mb-1">admin_panel_settings</span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined mb-1">savings</span>
+<span class="font-label-caps text-label-caps">Savings</span>
+</button>
+</nav>
+</body></html>

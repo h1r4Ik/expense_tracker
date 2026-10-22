@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ledger - Recurring Charges</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2f3131",
+                        "surface-container-high": "#e9e8e8",
+                        "on-secondary-container": "#626262",
+                        "tertiary-container": "#1a1c1c",
+                        "secondary-fixed": "#e4e2e2",
+                        "outline-variant": "#cfc4c5",
+                        "on-secondary-fixed-variant": "#464747",
+                        "surface-container": "#eeeeed",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dadada",
+                        "surface-variant": "#e3e2e2",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#848484",
+                        "on-primary-fixed": "#1b1b1b",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-tint": "#5e5e5e",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "background": "#faf9f9",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "primary-container": "#1b1b1b",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#5e5e5e",
+                        "surface-container-low": "#f4f3f3",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#faf9f9",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e3e2e2",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "inverse-primary": "#c6c6c6",
+                        "on-surface": "#1a1c1c",
+                        "on-primary-fixed-variant": "#474747",
+                        "secondary-container": "#e1dfdf",
+                        "surface": "#faf9f9",
+                        "secondary-fixed-dim": "#c7c6c6",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f1f0f0",
+                        "outline": "#7e7576",
+                        "on-background": "#1a1c1c",
+                        "on-surface-variant": "#4c4546",
+                        "primary-fixed": "#e2e2e2",
+                        "on-primary": "#ffffff",
+                        "primary": "#000000",
+                        "tertiary": "#000000",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-tertiary-container": "#838484"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xl": "48px",
+                        "container-max": "1200px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "display": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-mono": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-surface dark:bg-surface-container-lowest border-b border-outline-variant dark:border-outline">
+<div class="flex items-center justify-between px-gutter py-md max-w-container-max mx-auto">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+</div>
+<h1 class="font-display text-headline-md font-bold tracking-tighter text-primary dark:text-on-background">LEDGER</h1>
+<div class="flex items-center">
+<button class="text-primary dark:text-primary-fixed hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors active:opacity-80 transition-opacity p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-gutter py-xl">
+<div class="mb-xl">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-sm">Recurring</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your scheduled expenses.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Weekly -->
+<section class="bg-surface-container-lowest border border-surface-container-highest p-lg">
+<div class="flex items-center justify-between mb-lg border-b border-surface-container-highest pb-sm">
+<h3 class="font-label-caps text-label-caps text-secondary">WEEKLY</h3>
+<span class="font-label-mono text-label-mono text-primary">$120.00</span>
+</div>
+<div class="space-y-0">
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">local_gas_station</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Petrol</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE IN 2 DAYS</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$85.00</span>
+</div>
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">shopping_basket</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Flour &amp; Staples</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE IN 5 DAYS</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$35.00</span>
+</div>
+</div>
+</section>
+<!-- Monthly -->
+<section class="bg-surface-container-lowest border border-surface-container-highest p-lg">
+<div class="flex items-center justify-between mb-lg border-b border-surface-container-highest pb-sm">
+<h3 class="font-label-caps text-label-caps text-secondary">MONTHLY</h3>
+<span class="font-label-mono text-label-mono text-primary">$175.00</span>
+</div>
+<div class="space-y-0">
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">phone_iphone</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Mobile Postpaid</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE AUG 15</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$75.00</span>
+</div>
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">volunteer_activism</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Charity Donation</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE AUG 28</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$100.00</span>
+</div>
+</div>
+</section>
+<!-- Bi-Monthly -->
+<section class="bg-surface-container-lowest border border-surface-container-highest p-lg">
+<div class="flex items-center justify-between mb-lg border-b border-surface-container-highest pb-sm">
+<h3 class="font-label-caps text-label-caps text-secondary">BI-MONTHLY</h3>
+<span class="font-label-mono text-label-mono text-primary">$210.00</span>
+</div>
+<div class="space-y-0">
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">bolt</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Electricity</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE SEP 01</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$140.00</span>
+</div>
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">cooking</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Cooking Gas</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE SEP 15</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$70.00</span>
+</div>
+</div>
+</section>
+<!-- Yearly -->
+<section class="bg-surface-container-lowest border border-surface-container-highest p-lg">
+<div class="flex items-center justify-between mb-lg border-b border-surface-container-highest pb-sm">
+<h3 class="font-label-caps text-label-caps text-secondary">YEARLY</h3>
+<span class="font-label-mono text-label-mono text-primary">$250.00</span>
+</div>
+<div class="space-y-0">
+<div class="flex items-center justify-between py-md border-b border-surface-container-highest last:border-0 group cursor-pointer hover:bg-surface-container-low transition-colors px-sm -mx-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline">grocery</span>
+<div>
+<p class="font-body-md text-body-md text-primary">Bulk Spices</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1">DUE NOV 10</p>
+</div>
+</div>
+<span class="font-label-mono text-label-mono text-primary">$250.00</span>
+</div>
+</div>
+</section>
+</div>
+<div class="mt-xl flex justify-center">
+<button class="flex items-center gap-sm font-label-caps text-label-caps bg-primary text-on-primary px-lg py-md hover:bg-surface-tint transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                ADD NEW CATEGORY
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface dark:bg-surface-container-lowest px-sm pb-md border-t border-outline-variant dark:border-outline z-50 md:hidden">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-[10px] leading-none">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-caps text-[10px] leading-none">Daily</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold border-t-2 border-primary pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1 filled" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-caps text-[10px] leading-none">Recurring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-caps text-[10px] leading-none">Admin</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim pt-1 hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="savings">savings</span>
+<span class="font-label-caps text-[10px] leading-none">Savings</span>
+</a>
+</nav>
+</body></html>
