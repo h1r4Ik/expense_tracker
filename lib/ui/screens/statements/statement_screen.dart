@@ -8,6 +8,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/common/frosted_header_bar.dart';
+import '../../widgets/common/glass_container.dart';
 
 enum QuickPeriod { thisWeek, thisMonth, lastMonth, last3Months, thisYear, custom }
 
@@ -130,11 +132,62 @@ class _StatementScreenState extends State<StatementScreen> {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Statements'),
+      extendBodyBehindAppBar: true,
+      appBar: FrostedHeaderBar(
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: GlassContainer(
+            borderRadius: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  LucideIcons.fileText,
+                  size: 20,
+                  color: theme.colorScheme.onSurface,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Statements',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          GlassContainer(
+            shape: BoxShape.circle,
+            padding: const EdgeInsets.all(10),
+            onTap: () {
+              context.push(
+                '/statements/preview',
+                extra: {
+                  'from': _fromDate,
+                  'to': _toDate,
+                },
+              );
+            },
+            child: Icon(
+              LucideIcons.printer,
+              size: 20,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          MediaQuery.of(context).padding.top + 68,
+          16,
+          120,
+        ),
         children: [
           // Quick Select Chips
           Text(
@@ -265,7 +318,7 @@ class _StatementScreenState extends State<StatementScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Statement Summary',
+                      'Summary',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -309,7 +362,7 @@ class _StatementScreenState extends State<StatementScreen> {
                     ),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text('Total Expense', style: theme.textTheme.bodySmall),
                           const SizedBox(height: 4),
@@ -389,123 +442,129 @@ class _StatementScreenState extends State<StatementScreen> {
               ),
             )
           else
-            Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-              ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: sortedCategories.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final entry = sortedCategories[index];
-                  final catName = entry.key;
-                  final catAmount = entry.value;
-                  final pct = totalExpense > 0 ? (catAmount / totalExpense) : 0.0;
-                  final icon = CategoryData.getIcon(catName);
+            ...sortedCategories.map((entry) {
+              final catName = entry.key;
+              final catAmount = entry.value;
+              final pct = totalExpense > 0 ? (catAmount / totalExpense) : 0.0;
+              final icon = CategoryData.getIcon(catName);
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: isDark
-                                  ? AppColors.darkSurfaceVariant
-                                  : AppColors.lightSurfaceVariant,
-                              child: Icon(
-                                icon,
-                                size: 16,
-                                color: theme.colorScheme.onSurface,
-                              ),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: isDark
+                                ? AppColors.darkSurfaceVariant
+                                : AppColors.lightSurfaceVariant,
+                            child: Icon(
+                              icon,
+                              size: 17,
+                              color: theme.colorScheme.onSurface,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                catName,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              CurrencyFormatter.format(catAmount),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: pct.clamp(0.0, 1.0),
-                                  minHeight: 6,
-                                  backgroundColor: isDark
-                                      ? AppColors.darkSurfaceElevated
-                                      : AppColors.lightSurfaceVariant,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    isDark ? Colors.white : Colors.black,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  catName,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${(pct * 100).toStringAsFixed(1)}% of total',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${(pct * 100).toStringAsFixed(1)}%',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                              ),
+                          ),
+                          Text(
+                            CurrencyFormatter.format(catAmount),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14.5,
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
+                    // Sleek progress bar sticking directly to the bottom as a border
+                    Container(
+                      height: 2,
+                      width: double.infinity,
+                      color: isDark
+                          ? const Color(0xFF262626)
+                          : const Color(0xFFEEEEEE),
+                      alignment: Alignment.centerLeft,
+                      child: FractionallySizedBox(
+                        widthFactor: pct.clamp(0.0, 1.0),
+                        child: Container(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+          const SizedBox(height: 24),
+
+          // Preview & Print Statement Button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? Colors.white : Colors.black,
+                foregroundColor: isDark ? Colors.black : Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {
+                context.push(
+                  '/statements/preview',
+                  extra: {
+                    'from': _fromDate,
+                    'to': _toDate,
+                  },
+                );
+              },
+              icon: const Icon(LucideIcons.fileSpreadsheet, size: 18),
+              label: const Text(
+                'Preview & Print Statement',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+          ),
+          const SizedBox(height: 16),
         ],
-      ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
-          ),
-        ),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              context.push(
-                '/statements/preview',
-                extra: {
-                  'from': _fromDate,
-                  'to': _toDate,
-                },
-              );
-            },
-            icon: const Icon(LucideIcons.fileSpreadsheet, size: 18),
-            label: const Text('Preview & Print'),
-          ),
-        ),
       ),
     );
   }

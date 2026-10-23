@@ -10,6 +10,7 @@ import '../../../data/models/user_account.dart';
 import '../../../logic/providers/auth_provider.dart';
 import '../../../logic/providers/group_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,12 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   int _selectedTab = 0; // 0 = Sign In, 1 = Create Account
-
+  int _accountPageIndex = 0; // For the PageView of existing accounts
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
+  final _accountPageController = PageController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
@@ -38,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
     _nameController.dispose();
     _confirmPasswordController.dispose();
+    _accountPageController.dispose();
     super.dispose();
   }
 
@@ -79,8 +81,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match.')),
+      AppSnackbar.show(
+        context,
+        message: 'Passwords do not match.',
+        isError: true,
+        isAboveBottomNav: false,
       );
       return;
     }
@@ -98,68 +103,6 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
       if (success) {
         _onSuccessRedirect();
-      }
-    }
-  }
-
-  Future<void> _handleOfflineLogin() async {
-    final nameCtrl = TextEditingController(text: _nameController.text);
-    final emailCtrl = TextEditingController(text: _emailController.text);
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Offline Profile'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Create a local offline account. Your expenses will be stored safely on this device and can be synced later.',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Your Name',
-                hintText: 'e.g. Hardik',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email (Optional)',
-                hintText: 'user@example.com',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Start Offline'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
-      final auth = context.read<AuthProvider>();
-      final name = nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : 'Personal Account';
-      final email = emailCtrl.text.trim().isNotEmpty ? emailCtrl.text.trim() : 'offline@local';
-
-      final ok = await auth.signInLocally(email: email, displayName: name);
-      if (mounted) {
-        setState(() => _isLoading = false);
-        if (ok) _onSuccessRedirect();
       }
     }
   }
@@ -215,74 +158,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Track every rupee, your way',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 28),
-
-                  // Existing Accounts Quick-Switcher (if any accounts are logged in)
-                  if (hasAccounts) ...[
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                        border: Border.all(
-                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Logged-in Accounts (${accounts.length}/2)',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                                ),
-                              ),
-                              if (accounts.length < 2)
-                                Text(
-                                  '+ 1 slot available',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          ...accounts.map(
-                            (acc) => _AccountCard(
-                              account: acc,
-                              isActive: acc.id == auth.activeAccountId,
-                              onTap: () async {
-                                await auth.switchAccount(acc.id);
-                                _onSuccessRedirect();
-                              },
-                              onSignOut: () async {
-                                await auth.signOutAccount(acc.id);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-
                   // Tab Selector: [ Sign In ] [ Create Account ]
                   Container(
                     height: 48,
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurfaceVariant,
-                      borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+                      color: isDark
+                          ? AppColors.darkSurface
+                          : AppColors.lightSurfaceVariant,
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.inputRadius,
+                      ),
                       border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                        color: isDark
+                            ? AppColors.darkBorder
+                            : AppColors.lightBorder,
                       ),
                     ),
                     child: Row(
@@ -316,7 +212,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Error Banner
                   if (auth.authError != null) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.semanticRed.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
@@ -369,9 +268,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: const InputDecoration(
                               labelText: 'Full Name',
                               hintText: 'Hardik Sharma',
-                              prefixIcon: Icon(LucideIcons.user, size: 18),
+                              prefixIcon: Icon(LucideIcons.userRound, size: 18),
                             ),
-                            validator: (val) => Validators.requiredField(val, 'Full Name'),
+                            validator: (val) =>
+                                Validators.requiredField(val, 'Full Name'),
                           ),
                           const SizedBox(height: 14),
                         ],
@@ -408,11 +308,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             prefixIcon: const Icon(LucideIcons.lock, size: 18),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
+                                _obscurePassword
+                                    ? LucideIcons.eyeOff
+                                    : LucideIcons.eye,
                                 size: 18,
                               ),
-                              onPressed: () =>
-                                  setState(() => _obscurePassword = !_obscurePassword),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
                             ),
                           ),
                           validator: (val) {
@@ -435,7 +338,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: InputDecoration(
                               labelText: 'Confirm Password',
                               hintText: '••••••••',
-                              prefixIcon: const Icon(LucideIcons.shieldCheck, size: 18),
+                              prefixIcon: const Icon(
+                                LucideIcons.shieldCheck,
+                                size: 18,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword
@@ -443,8 +349,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       : LucideIcons.eye,
                                   size: 18,
                                 ),
-                                onPressed: () => setState(() =>
-                                    _obscureConfirmPassword = !_obscureConfirmPassword),
+                                onPressed: () => setState(
+                                  () => _obscureConfirmPassword =
+                                      !_obscureConfirmPassword,
+                                ),
                               ),
                             ),
                             validator: (val) {
@@ -461,15 +369,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Primary Action Button (Sign In or Create Account)
                         SizedBox(
                           height: 50,
-                          child: ElevatedButton(
+                          child: TextButton(
                             onPressed: _isLoading
                                 ? null
-                                : (_selectedTab == 0 ? _handleSignIn : _handleSignUp),
+                                : (_selectedTab == 0
+                                      ? _handleSignIn
+                                      : _handleSignUp),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+                                borderRadius: BorderRadius.circular(
+                                  AppConstants.inputRadius,
+                                ),
                               ),
                             ),
                             child: _isLoading
@@ -507,53 +419,99 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Offline Mode Option
-                        OutlinedButton(
-                          onPressed: _isLoading ? null : _handleOfflineLogin,
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppConstants.inputRadius),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                       ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  // Existing Accounts Quick-Switcher (if any accounts are logged in)
+                  if (hasAccounts) ...[
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.darkSurface
+                            : AppColors.lightSurface,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: isDark
+                              ? AppColors.darkBorder
+                              : AppColors.lightBorder,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(
-                                LucideIcons.cloudOff,
-                                size: 16,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
-                              const SizedBox(width: 8),
                               Text(
-                                'Continue in Offline Mode',
-                                style: TextStyle(
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                                'Logged-in Accounts',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Footer info
-                  Center(
-                    child: Text(
-                      'Max 2 simultaneous accounts · Strict monochrome',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 70,
+                            child: PageView.builder(
+                              controller: _accountPageController,
+                              itemCount: accounts.length,
+                              onPageChanged: (index) {
+                                setState(() => _accountPageIndex = index);
+                              },
+                              itemBuilder: (context, index) {
+                                final account = accounts[index];
+                                return _AccountCard(
+                                  account: account,
+                                  isActive: account.id == auth.activeAccountId,
+                                  onTap: () async {
+                                    await auth.switchAccount(account.id);
+                                    _onSuccessRedirect();
+                                  },
+                                  onSignOut: () async {
+                                    await auth.signOutAccount(account.id);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          if (accounts.length > 1) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                accounts.length,
+                                (index) => AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 3,
+                                  ),
+                                  width: _accountPageIndex == index ? 16 : 5,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: _accountPageIndex == index
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.24),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Footer info
                 ],
               ),
             ),
@@ -596,7 +554,9 @@ class _TabButton extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: isSelected
                 ? theme.colorScheme.onPrimary
-                : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                : (isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary),
           ),
         ),
       ),
@@ -625,12 +585,12 @@ class _AccountCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant,
-        borderRadius: BorderRadius.circular(12),
+        color: isDark
+            ? AppColors.darkSurfaceVariant
+            : AppColors.lightSurfaceVariant,
+        borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: isActive
-              ? theme.colorScheme.primary
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          color:(isDark ? AppColors.darkBorder : AppColors.lightBorder),
           width: isActive ? 1.5 : 1,
         ),
       ),
@@ -645,11 +605,15 @@ class _AccountCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  color: isDark
+                      ? AppColors.darkSurface
+                      : AppColors.lightSurface,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  account.isGroup ? LucideIcons.users : LucideIcons.user,
+                  account.isGroup
+                      ? LucideIcons.usersRound
+                      : LucideIcons.userRound,
                   size: 18,
                   color: theme.colorScheme.onSurface,
                 ),
@@ -670,32 +634,16 @@ class _AccountCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (isActive) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'Active',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                       ],
                     ),
                     if (account.email != null && account.email!.isNotEmpty)
                       Text(
                         account.email!,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11,
-                          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary,
                         ),
                       )
                     else
@@ -703,7 +651,9 @@ class _AccountCard extends StatelessWidget {
                         'Last active: ${CurrencyFormatter.formatDateOnly(account.lastActiveAt)}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11,
-                          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary,
                         ),
                       ),
                   ],
@@ -724,7 +674,7 @@ class _AccountCard extends StatelessWidget {
                           onPressed: () => Navigator.of(ctx).pop(),
                           child: const Text('Cancel'),
                         ),
-                        ElevatedButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(ctx).pop();
                             onSignOut();

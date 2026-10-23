@@ -7,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/transaction_model.dart';
+import '../../../logic/providers/auth_provider.dart';
+import '../../../logic/providers/group_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
 
 class TransactionTile extends StatelessWidget {
@@ -22,13 +24,31 @@ class TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final isIncome = transaction.isIncome;
-    final amountColor = isIncome ? AppColors.semanticGreen : AppColors.semanticRed;
+    final amountColor = isIncome ? AppColors.semanticGreen : isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final categoryIcon = CategoryData.getIcon(transaction.category);
+    final title = transaction.title.length > 25
+      ? (transaction.title.substring(0, 25).lastIndexOf(' ') > 0
+          ? transaction.title.substring(0, transaction.title.substring(0, 25).lastIndexOf(' '))
+          : transaction.title.substring(0, 25))
+      : transaction.title;
+
+    final authProvider = context.watch<AuthProvider>();
+    final isGroup = transaction.isGroupTransaction || (authProvider.activeAccount?.isGroup ?? false);
+    final primaryUserId = authProvider.primaryUserId ?? authProvider.activeAccountId ?? '';
+    final groupProvider = context.watch<GroupProvider>();
+    final group = isGroup
+        ? groupProvider.groups.where((g) => g.id == (transaction.groupId ?? authProvider.activeAccount?.groupId)).firstOrNull
+        : null;
+    final bool isAdmin = isGroup && (group?.isAdmin(primaryUserId) ?? false);
+    final bool isSpender = transaction.paidByUserId == primaryUserId ||
+        transaction.paidByName == (authProvider.activeAccount?.nameOrDefault ?? 'You');
+    final bool canDelete = !isGroup || isAdmin || isSpender;
 
     return Dismissible(
       key: ValueKey('tx_${transaction.id}'),
-      direction: DismissDirection.endToStart,
+      direction: canDelete ? DismissDirection.endToStart : DismissDirection.none,
       background: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         alignment: Alignment.centerRight,
@@ -83,9 +103,9 @@ class TransactionTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(23),
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.15),
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             width: 1,
           ),
         ),
@@ -119,7 +139,7 @@ class TransactionTile extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      transaction.title,
+                                        title,
                                       style: theme.textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 15,
@@ -128,47 +148,6 @@ class TransactionTile extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  if (transaction.isFamilyTransaction) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: theme.colorScheme.outline.withValues(alpha: 0.15),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            LucideIcons.users,
-                                            size: 11,
-                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                                          ),
-                                          const SizedBox(width: 3),
-                                          Text(
-                                            transaction.paidByName ?? 'Group',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w500,
-                                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                  if (transaction.syncStatus == SyncStatus.pendingSync) ...[
-                                    const SizedBox(width: 6),
-                                    Icon(
-                                      LucideIcons.cloudUpload,
-                                      size: 14,
-                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                                    ),
-                                  ],
                                 ],
                               ),
                             ),
@@ -193,7 +172,7 @@ class TransactionTile extends StatelessWidget {
                           
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(30),
@@ -205,12 +184,17 @@ class TransactionTile extends StatelessWidget {
                               child: Text(
                                 transaction.category,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
                               ),
                             ),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  
                             Text(
                               DateFormatter.timeOnly(transaction.date),
                               style: theme.textTheme.bodySmall?.copyWith(
@@ -218,6 +202,16 @@ class TransactionTile extends StatelessWidget {
                                 fontSize: 12,
                               ),
                             ),
+                              if (transaction.syncStatus == SyncStatus.pendingSync) ...[
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      LucideIcons.cloudUpload,
+                                      size: 14,
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                    ),
+                                  ],
+                                ])),
+                               
                           //   if (transaction.paymentMethod != null)
                           //     Container(
                           //       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -240,6 +234,7 @@ class TransactionTile extends StatelessWidget {
                           //     ),
                           ],
                         ),
+                        
                       ],
                     ),
                   ),

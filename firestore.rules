@@ -8,10 +8,19 @@ service cloud.firestore {
 
     // Users collection and subcollections (personal transactions)
     match /users/{userId} {
-      allow read, write: if !isAuthenticated() || request.auth.uid == userId;
+      allow read, write: if true;
 
       match /{allSubcollections=**} {
-        allow read, write: if !isAuthenticated() || request.auth.uid == userId;
+        allow read, write: if true;
+      }
+    }
+
+    // Groups collection (shared groups and group transactions)
+    match /groups/{groupId} {
+      allow read, write: if true;
+
+      match /{allSubcollections=**} {
+        allow read, write: if true;
       }
     }
 

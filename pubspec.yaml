@@ -44,6 +44,7 @@ dependencies:
 
   # Update service
   package_info_plus: ^10.2.2
+  share_plus: ^13.3.1
 
 dev_dependencies:
   flutter_test:

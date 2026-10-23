@@ -153,6 +153,7 @@ class TransactionProvider extends ChangeNotifier {
     if (account.isGroup && account.groupId != null && account.groupId!.isNotEmpty) {
       _activeGroupId = account.groupId;
       listenToGroupTransactions(account.groupId!);
+      unawaited(fullSync(account.id, account.groupId));
     } else {
       _groupTxSubscription?.cancel();
       _activeGroupId = null;
@@ -313,12 +314,12 @@ class TransactionProvider extends ChangeNotifier {
       for (final rTx in remoteList) {
         final idx = currentList.indexWhere((t) => t.id == rTx.id);
         if (idx == -1) {
-          await _repo.add(target, rTx.copyWith(syncStatus: SyncStatus.synced, accountId: target));
+          await _repo.saveDirect(target, rTx.copyWith(syncStatus: SyncStatus.synced, accountId: target));
           changed = true;
         } else if (rTx.lastModified != null) {
           final localModified = currentList[idx].lastModified;
           if (localModified == null || rTx.lastModified!.isAfter(localModified)) {
-            await _repo.update(target, rTx.copyWith(syncStatus: SyncStatus.synced, accountId: target));
+            await _repo.saveDirect(target, rTx.copyWith(syncStatus: SyncStatus.synced, accountId: target));
             changed = true;
           }
         }

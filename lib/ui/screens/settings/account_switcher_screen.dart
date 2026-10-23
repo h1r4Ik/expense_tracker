@@ -4,10 +4,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/user_account.dart';
 import '../../../logic/providers/auth_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/common/frosted_header_bar.dart';
+import '../../widgets/common/glass_container.dart';
 
 class AccountSwitcherScreen extends StatelessWidget {
   const AccountSwitcherScreen({super.key});
@@ -36,7 +37,7 @@ class AccountSwitcherScreen extends StatelessWidget {
             onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Save'),
           ),
@@ -63,14 +64,14 @@ class AccountSwitcherScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add 2nd Account Slot',
-                style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                'Add Account Slot',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 6),
               Text(
-                'Choose how you want to use your second account slot:',
+                'Choose how you want to add an account:',
                 style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
@@ -78,30 +79,28 @@ class AccountSwitcherScreen extends StatelessWidget {
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(LucideIcons.logIn, size: 22),
-                title: const Text('Sign In / Register with Email'),
-                subtitle: const Text('Log in to a cloud-synced account'),
+                title:  Text('Sign In / Register with Email',style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 1),
+                    ),
+                ),
+              
                 trailing: const Icon(LucideIcons.chevronRight, size: 18),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 onTap: () => Navigator.of(ctx).pop('login'),
               ),
               const SizedBox(height: 8),
               ListTile(
-                leading: const Icon(LucideIcons.users, size: 22),
-                title: const Text('Join or Create a Group'),
-                subtitle: const Text('Shared family/team ledger as an account slot'),
+                leading: const Icon(LucideIcons.usersRound, size: 22),
+                title: Text('Join or Create a Group', style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 1),
+                    ),
+                ),
+               
                 trailing: const Icon(LucideIcons.chevronRight, size: 18),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 onTap: () => Navigator.of(ctx).pop('group'),
               ),
-              const SizedBox(height: 8),
-              ListTile(
-                leading: const Icon(LucideIcons.plus, size: 22),
-                title: const Text('Create Offline Local Ledger'),
-                subtitle: const Text('Quick secondary ledger stored only on this device'),
-                trailing: const Icon(LucideIcons.chevronRight, size: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                onTap: () => Navigator.of(ctx).pop('offline'),
-              ),
+             
             ],
           ),
         ),
@@ -131,7 +130,7 @@ class AccountSwitcherScreen extends StatelessWidget {
               onPressed: () => Navigator.of(ctx).pop(false),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               child: const Text('Create'),
             ),
@@ -167,7 +166,7 @@ class AccountSwitcherScreen extends StatelessWidget {
             onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          TextButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.semanticRed,
               foregroundColor: Colors.white,
@@ -191,12 +190,70 @@ class AccountSwitcherScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     final activeId = auth.activeAccountId;
 
+    final topInset = MediaQuery.of(context).padding.top;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Accounts'),
+      extendBodyBehindAppBar: true,
+      appBar: FrostedHeaderBar(
+        leading: GlassContainer(
+          shape: BoxShape.circle,
+          padding: const EdgeInsets.all(10),
+          onTap: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/settings');
+            }
+          },
+          child: Icon(
+            LucideIcons.chevronLeft,
+            size: 20,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: GlassContainer(
+            borderRadius: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  LucideIcons.userRound,
+                  size: 20,
+                  color: theme.colorScheme.onSurface,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Accounts',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          if (auth.accounts.length < AppConstants.maxAccounts)
+            
+          GlassContainer(
+            shape: BoxShape.circle,
+            padding: const EdgeInsets.all(10),
+            onTap: () => _showAddAccountDialog(context, auth),
+            child: Icon(
+              LucideIcons.plus,
+              size: 20,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        padding: EdgeInsets.fromLTRB(16, topInset + FrostedHeaderBar.kHeaderHeight + 14, 16, 100),
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -218,7 +275,7 @@ class AccountSwitcherScreen extends StatelessWidget {
                   color: isActive
                       ? theme.colorScheme.primary
                       : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  width: isActive ? 2 : 1,
+                  width: 0.5,
                 ),
               ),
               child: Material(
@@ -249,7 +306,7 @@ class AccountSwitcherScreen extends StatelessWidget {
                               ? AppColors.darkSurfaceVariant
                               : AppColors.lightSurfaceVariant,
                           child: Icon(
-                            account.isGroup ? LucideIcons.users : LucideIcons.user,
+                            account.isGroup ? LucideIcons.usersRound : LucideIcons.userRound,
                             size: 24,
                             color: theme.colorScheme.onSurface,
                           ),
@@ -260,6 +317,7 @@ class AccountSwitcherScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Flexible(
                                     child: Text(
@@ -286,7 +344,7 @@ class AccountSwitcherScreen extends StatelessWidget {
                                         'Active',
                                         style: TextStyle(
                                           color: isDark ? Colors.black : Colors.white,
-                                          fontSize: 10,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -298,7 +356,7 @@ class AccountSwitcherScreen extends StatelessWidget {
                               Text(
                                 account.isGroup
                                     ? 'Shared Group Ledger · Auto-sync'
-                                    : 'Personal Account · Created: ${DateFormatter.dateOnly(account.createdAt)}',
+                                    : 'Personal Account',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurface
                                       .withValues(alpha: 0.5),
@@ -326,27 +384,7 @@ class AccountSwitcherScreen extends StatelessWidget {
           }),
         ],
       ),
-      bottomSheet: auth.canAddAccount
-          ? Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                border: Border(
-                  top: BorderSide(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
-                ),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showAddAccountDialog(context, auth),
-                  icon: const Icon(LucideIcons.plus, size: 18),
-                  label: const Text('Add Account'),
-                ),
-              ),
-            )
-          : null,
+  
     );
   }
 }

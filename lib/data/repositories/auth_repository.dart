@@ -63,6 +63,17 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
+    final accounts = await _local.getAccounts();
+    final normalizedEmail = email.trim().toLowerCase();
+    final existingLocalAccount = accounts.any(
+      (account) => account.email?.trim().toLowerCase() == normalizedEmail,
+    );
+    if (!existingLocalAccount && accounts.length >= AppConstants.maxAccounts) {
+      throw Exception(
+        'Maximum of ${AppConstants.maxAccounts} accounts reached. Remove an account before signing in with a new one.',
+      );
+    }
+
     final cred = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -72,14 +83,16 @@ class AuthRepository {
       throw Exception('Authentication returned empty user profile.');
     }
 
-    final accounts = await _local.getAccounts();
     final now = DateTime.now();
     final resolvedName = (user.displayName != null && user.displayName!.trim().isNotEmpty)
         ? user.displayName!.trim()
         : (email.contains('@') ? email.split('@').first : 'User');
 
     // Check if account already exists on device
-    final existingIndex = accounts.indexWhere((a) => a.id == user.uid || a.email == email);
+    final existingIndex = accounts.indexWhere(
+      (account) =>
+          account.id == user.uid || account.email?.trim().toLowerCase() == normalizedEmail,
+    );
     UserAccount account;
 
     if (existingIndex >= 0) {
@@ -103,17 +116,7 @@ class AuthRepository {
         isActive: true,
       );
 
-      // If already at max 2 accounts, replace the inactive one
-      if (accounts.length >= AppConstants.maxAccounts) {
-        final inactiveIndex = accounts.indexWhere((a) => !a.isActive);
-        if (inactiveIndex >= 0) {
-          accounts[inactiveIndex] = account;
-        } else {
-          accounts[0] = account;
-        }
-      } else {
-        accounts.add(account);
-      }
+      accounts.add(account);
     }
 
     // Set other accounts inactive
@@ -130,6 +133,13 @@ class AuthRepository {
     required String password,
     required String displayName,
   }) async {
+    final accounts = await _local.getAccounts();
+    if (accounts.length >= AppConstants.maxAccounts) {
+      throw Exception(
+        'Maximum of ${AppConstants.maxAccounts} accounts reached. Remove an account before creating a new one.',
+      );
+    }
+
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -140,7 +150,6 @@ class AuthRepository {
       throw Exception('Account creation returned empty profile.');
     }
 
-    final accounts = await _local.getAccounts();
     final now = DateTime.now();
     final account = UserAccount(
       id: user.uid,
@@ -152,17 +161,7 @@ class AuthRepository {
       isActive: true,
     );
 
-    // If max accounts reached, replace inactive
-    if (accounts.length >= AppConstants.maxAccounts) {
-      final inactiveIndex = accounts.indexWhere((a) => !a.isActive);
-      if (inactiveIndex >= 0) {
-        accounts[inactiveIndex] = account;
-      } else {
-        accounts[0] = account;
-      }
-    } else {
-      accounts.add(account);
-    }
+    accounts.add(account);
 
     final updated = accounts.map((a) => a.id == account.id ? account : a.copyWith(isActive: false)).toList();
     await _local.saveAccounts(updated);
@@ -179,7 +178,10 @@ class AuthRepository {
     final accounts = await _local.getAccounts();
     final now = DateTime.now();
 
-    final existingIndex = accounts.indexWhere((a) => a.email == email);
+    final normalizedEmail = email.trim().toLowerCase();
+    final existingIndex = accounts.indexWhere(
+      (account) => account.email?.trim().toLowerCase() == normalizedEmail,
+    );
     UserAccount account;
 
     if (existingIndex >= 0) {
@@ -191,6 +193,12 @@ class AuthRepository {
       );
       accounts[existingIndex] = account;
     } else {
+      if (accounts.length >= AppConstants.maxAccounts) {
+        throw Exception(
+          'Maximum of ${AppConstants.maxAccounts} accounts reached. Remove an account before creating a new one.',
+        );
+      }
+
       final id = const Uuid().v4();
       account = UserAccount(
         id: id,
@@ -202,16 +210,7 @@ class AuthRepository {
         isActive: true,
       );
 
-      if (accounts.length >= AppConstants.maxAccounts) {
-        final inactiveIndex = accounts.indexWhere((a) => !a.isActive);
-        if (inactiveIndex >= 0) {
-          accounts[inactiveIndex] = account;
-        } else {
-          accounts[0] = account;
-        }
-      } else {
-        accounts.add(account);
-      }
+      accounts.add(account);
     }
 
     final updated = accounts.map((a) => a.id == account.id ? account : a.copyWith(isActive: false)).toList();
@@ -252,8 +251,20 @@ class AuthRepository {
 
   /// Signs out of Firebase and unsets or removes the account
   Future<void> signOut(String accountId) async {
+    final accounts = await _local.getAccounts();
+    final target = accounts.firstWhere((a) => a.id == accountId, orElse: () => accounts.first);
+    if (!target.isGroup) {
+      try {
+        await _auth.signOut();
+      } catch (_) {}
+    }
+    await removeAccount(accountId);
+  }
+
+  /// Permanently deletes an account from Firebase Auth and purges all local storage.
+  Future<void> deleteAccountPermanently(String accountId) async {
     try {
-      await _auth.signOut();
+      await _auth.deleteUserAccount();
     } catch (_) {}
     await removeAccount(accountId);
   }

@@ -33,6 +33,10 @@ class AuthProvider extends ChangeNotifier {
   UserAccount? get personalAccount =>
       _accounts.cast<UserAccount?>().firstWhere((a) => a?.isPersonal == true, orElse: () => null);
 
+  /// Primary real user account (the user's identity, never a group workspace)
+  UserAccount? get primaryAccount => personalAccount ?? _accounts.firstOrNull;
+  String? get primaryUserId => primaryAccount?.id;
+
   void clearAuthError() {
     _authError = null;
     notifyListeners();
@@ -163,7 +167,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Adds or binds a Group into Account Slot 2 (out of max 2 accounts)
+  /// Adds or binds a Group into an available account slot.
   Future<UserAccount> addGroupAccount({
     required String groupId,
     required String groupName,
@@ -249,6 +253,30 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await _repo.signOut(accountId);
+      _accounts = await _repo.getAccounts();
+      final activeId = await _repo.getActiveAccountId();
+
+      if (activeId != null && activeId.isNotEmpty && _accounts.any((a) => a.id == activeId)) {
+        _activeAccount = _accounts.firstWhere((a) => a.id == activeId);
+      } else if (_accounts.isNotEmpty) {
+        _activeAccount = _accounts.first;
+        await _repo.setActiveAccountId(_activeAccount!.id);
+      } else {
+        _activeAccount = null;
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Permanently deletes an account from Firebase Auth and purges all of its local data
+  Future<void> deleteAccountPermanently(String accountId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _repo.deleteAccountPermanently(accountId);
       _accounts = await _repo.getAccounts();
       final activeId = await _repo.getActiveAccountId();
 

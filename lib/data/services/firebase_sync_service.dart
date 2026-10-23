@@ -240,6 +240,9 @@ class FirebaseSyncService {
       return snap.docs
           .map((doc) => ExpenseTransaction.fromJson(doc.data()))
           .toList();
+    }).handleError((e) {
+      debugPrint('FirebaseSyncService.streamGroupTransactions error: $e');
+      return <ExpenseTransaction>[];
     });
   }
 
@@ -421,10 +424,10 @@ class FirebaseSyncService {
   /// Backward-compatible save alias
   Future<void> saveFamilyRemote(GroupModel family) => saveGroupRemote(family);
 
-  /// Fetches groups that the current user belongs to
-  Future<List<GroupModel>> fetchUserGroups() async {
+  /// Fetches groups that the specified user belongs to
+  Future<List<GroupModel>> fetchUserGroups([String? targetUserId]) async {
     final db = _db;
-    final uid = _userId ?? (await ensureAuth()) ?? _fallbackUserId;
+    final uid = targetUserId ?? _userId ?? (await ensureAuth()) ?? _fallbackUserId;
     if (db == null || uid == null) return [];
 
     try {
@@ -452,6 +455,101 @@ class FirebaseSyncService {
     }
   }
 
+  /// Removes a user from a group in Firestore
+  Future<void> leaveGroup({
+    required String groupId,
+    required String userId,
+  }) async {
+    final db = _db;
+    if (db == null) return;
+
+    try {
+      final docRef = db.collection('groups').doc(groupId);
+      final docSnap = await docRef.get();
+      if (docSnap.exists) {
+        final group = GroupModel.fromJson(docSnap.data()!);
+        final updatedMembers = List<String>.from(group.members)..remove(userId);
+        final updatedRoles = Map<String, String>.from(group.memberRoles)..remove(userId);
+        final updatedNames = Map<String, String>.from(group.memberNames)..remove(userId);
+
+        await docRef.update({
+          'members': updatedMembers,
+          'memberRoles': updatedRoles,
+          'memberNames': updatedNames,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Also clean legacy collection if present
+      final legacyRef = db.collection('families').doc(groupId);
+      final legacySnap = await legacyRef.get();
+      if (legacySnap.exists) {
+        final group = GroupModel.fromJson(legacySnap.data()!);
+        final updatedMembers = List<String>.from(group.members)..remove(userId);
+        final updatedRoles = Map<String, String>.from(group.memberRoles)..remove(userId);
+        final updatedNames = Map<String, String>.from(group.memberNames)..remove(userId);
+
+        await legacyRef.update({
+          'members': updatedMembers,
+          'memberRoles': updatedRoles,
+          'memberNames': updatedNames,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      debugPrint('FirebaseSyncService.leaveGroup error: $e');
+    }
+  }
+
+  /// Updates a member's role in a group in Firestore
+  Future<void> updateMemberRole({
+    required String groupId,
+    required String memberId,
+    required String newRole,
+  }) async {
+    final db = _db;
+    if (db == null) return;
+
+    try {
+      final docRef = db.collection('groups').doc(groupId);
+      final docSnap = await docRef.get();
+      if (docSnap.exists) {
+        final group = GroupModel.fromJson(docSnap.data()!);
+        final updatedRoles = Map<String, String>.from(group.memberRoles);
+        updatedRoles[memberId] = newRole;
+
+        await docRef.update({
+          'memberRoles': updatedRoles,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Also update legacy collection if present
+      final legacyRef = db.collection('families').doc(groupId);
+      final legacySnap = await legacyRef.get();
+      if (legacySnap.exists) {
+        final group = GroupModel.fromJson(legacySnap.data()!);
+        final updatedRoles = Map<String, String>.from(group.memberRoles);
+        updatedRoles[memberId] = newRole;
+
+        await legacyRef.update({
+          'memberRoles': updatedRoles,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      debugPrint('FirebaseSyncService.updateMemberRole error: $e');
+      rethrow;
+    }
+  }
+
+  /// Kicks / removes a member from a group (alias to leaveGroup logic)
+  Future<void> kickMember({
+    required String groupId,
+    required String memberId,
+  }) =>
+      leaveGroup(groupId: groupId, userId: memberId);
+
   /// Backward-compatible fetch alias
-  Future<List<GroupModel>> fetchUserFamilies() => fetchUserGroups();
+  Future<List<GroupModel>> fetchUserFamilies([String? userId]) => fetchUserGroups(userId);
 }

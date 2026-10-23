@@ -8,6 +8,8 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/common/frosted_header_bar.dart';
+import '../../widgets/common/glass_container.dart';
 import '../../widgets/common/section_header.dart';
 import '../../widgets/transaction/transaction_tile.dart';
 
@@ -68,41 +70,64 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
               maxChildSize: 0.9,
               expand: false,
               builder: (context, scrollController) {
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 36,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(2),
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: Column(
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 36,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
+                          const SizedBox(height: 16),
+                          Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Filters', style: theme.textTheme.titleLarge),
-                          TextButton(
-                            onPressed: () {
-                              setSheetState(() {
-                                _selectedType = null;
-                                _selectedCategories.clear();
+                          Expanded(child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  setSheetState(() {
+                                    _selectedType = null;
+                                    _selectedCategories.clear();
                                 _selectedPaymentMethod = null;
                               });
                             },
-                            child: const Text('Reset All'),
+                            child: const Text('Reset'),
                           ),
+                           TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            setState(() {});
+                          },
+                          child: const Text('Apply'),
+                        ),
+                            ]),
+                      ),
+                   
                         ],
                       ),
-                      const Divider(),
-                      const SizedBox(height: 8),
+                          const Divider(),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 90),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
 
                       // Transaction Type
                       Text('Transaction Type', style: theme.textTheme.titleMedium),
@@ -141,8 +166,8 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
                       Text('Payment Method', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 6,
+                        runSpacing: 6,
                         children: [
                           _buildFilterChoiceChip(
                             label: 'All',
@@ -168,8 +193,8 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
                       Text('Categories', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 4,
+                        runSpacing: 4 ,
                         children: allCategories.map((cat) {
                           final isSelected = _selectedCategories.contains(cat);
                           return FilterChip(
@@ -208,21 +233,14 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 28),
+                      
 
                       // Apply Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            setState(() {});
-                          },
-                          child: const Text('Apply Filters'),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             );
@@ -354,59 +372,150 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
         _selectedPaymentMethod != null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transaction Log'),
-        actions: [
-          IconButton(
-            tooltip: 'Filter',
-            onPressed: _openFilterSheet,
-            icon: Stack(
+      extendBodyBehindAppBar: true,
+      appBar: FrostedHeaderBar(
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: GlassContainer(
+            borderRadius: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(LucideIcons.slidersHorizontal, size: 20),
+                Icon(
+                  LucideIcons.clipboardList,
+                  size: 20,
+                  color: theme.colorScheme.onSurface,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Transaction Log',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          GlassContainer(
+            shape: BoxShape.circle,
+            padding: const EdgeInsets.all(10),
+            onTap: _openFilterSheet,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  LucideIcons.slidersHorizontal,
+                  size: 20,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
                 if (hasActiveFilters)
                   Positioned(
-                    right: 0,
-                    top: 0,
+                    right: -4,
+                    top: -4,
                     child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
+                      width: 10,
+                      height: 10,
+                      decoration:BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.semanticRed,
+                        border: Border.fromBorderSide(BorderSide(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 2,
+                        )),
                       ),
                     ),
                   ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: CustomScrollView(
         slivers: [
+          // Padding for frosted header
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: MediaQuery.of(context).padding.top + 68,
+            ),
+          ),
           // Search & Grouping Controls
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Column(
                 children: [
                   // Search Bar
-                  TextField(
+                  
+                  Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark ? const Color(0xFF2C2C2C) : const Color(0xFFE5E7EB),
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  LucideIcons.search,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
                     controller: _searchController,
+                    textAlignVertical: TextAlignVertical.center,
+                    cursorColor: theme.colorScheme.primary,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 14.5,
+                      color: theme.colorScheme.onSurface,
+                    ),
                     decoration: InputDecoration(
-                      hintText: 'Search transactions...',
-                      prefixIcon: const Icon(LucideIcons.search, size: 18),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(LucideIcons.x, size: 16),
-                              onPressed: () {
-                                _searchController.clear();
-                              },
-                            )
-                          : null,
+                      isDense: true,
+                      isCollapsed: true,
+                      hintText: 'Search transactions',
+                      hintStyle: TextStyle(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      filled: false,
+                      fillColor: Colors.transparent,
+                      contentPadding: EdgeInsets.zero,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      focusedErrorBorder: InputBorder.none,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                ),
+                if (_searchController.text.isNotEmpty)
+                  GestureDetector(
+                    onTap: () => _searchController.clear(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        LucideIcons.x,
+                        size: 16,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+  const SizedBox(height: 12),
                   // Grouping Row of ChoiceChips
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -433,10 +542,9 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
           if (filteredTransactions.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
+            
               child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
+                child:  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
@@ -462,8 +570,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
                     ],
                   ),
                 ),
-              ),
-            )
+              )
           else
             // Grouped Sliver List
             SliverList(
@@ -506,6 +613,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
                 childCount: grouped.length,
               ),
             ),
+          if (filteredTransactions.isNotEmpty)
           const SliverToBoxAdapter(
             child: SizedBox(height: 110),
           ),

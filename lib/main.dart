@@ -45,10 +45,11 @@ void main() async {
   final authProvider = AuthProvider(repo: authRepo);
   await authProvider.initialize();
 
-  // Link active account ID to Firebase sync if an account is already logged in
-  if (authProvider.hasActiveAccount && authProvider.activeAccountId != null) {
-    firebaseSync.setFallbackUserId(authProvider.activeAccountId!);
-    firebaseSync.setUserId(authProvider.activeAccountId!);
+  // Link primary user ID to Firebase sync if an account is already logged in
+  final primaryUserId = authProvider.primaryUserId ?? authProvider.activeAccountId;
+  if (primaryUserId != null && primaryUserId.isNotEmpty) {
+    firebaseSync.setFallbackUserId(primaryUserId);
+    firebaseSync.setUserId(primaryUserId);
   }
 
   // Pre-load transactions and groups for the active account if logged in
@@ -56,7 +57,8 @@ void main() async {
   final groupProvider = GroupProvider(repo: groupRepo);
   if (authProvider.hasActiveAccount && authProvider.activeAccountId != null) {
     txnProvider.updateActiveAccount(authProvider.activeAccount);
-    await groupProvider.loadGroups(authProvider.activeAccountId!);
+    final groupLookupId = primaryUserId ?? authProvider.activeAccountId!;
+    await groupProvider.loadGroups(groupLookupId, userId: groupLookupId);
   }
 
   runApp(

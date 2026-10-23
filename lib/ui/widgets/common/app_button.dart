@@ -55,7 +55,7 @@ class AppButton extends StatelessWidget {
       );
     }
 
-    return ElevatedButton(
+    return TextButton(
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,

@@ -92,20 +92,12 @@ class PdfExportService {
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
+             
               pw.Text(
-                'EXPENSE TRACKER',
-                style: pw.TextStyle(
-                  fontSize: 18,
-                  fontWeight: pw.FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Text(
-                'Account Statement: $accountName',
+                'Account Statement :- $accountName',
                 style: const pw.TextStyle(
-                  fontSize: 11,
-                  color: PdfColors.grey700,
+                  fontSize: 16,
+                  color: PdfColors.black,
                 ),
               ),
             ],

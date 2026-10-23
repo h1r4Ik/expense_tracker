@@ -10,13 +10,13 @@ class AppTheme {
   static const Color surface = AppColors.darkSurface;
   static const Color surfaceVariant = AppColors.darkSurfaceVariant;
   static const Color surfaceElevated = AppColors.darkSurfaceElevated;
-  static const Color darkBorder = AppColors.darkBorder;
+  static  Color darkBorder = Color(0xFFFFFFFF).withValues(alpha: 0.12);
   static const Color darkGlassBorder = AppColors.darkGlassBorder;
 
   static const Color lightBg = AppColors.lightBackground;
   static const Color lightSurface = AppColors.lightSurface;
   static const Color lightSurfaceVariant = AppColors.lightSurfaceVariant;
-  static const Color lightBorder = AppColors.lightBorder;
+  static  Color lightBorder = const Color(0xFF000000).withValues(alpha: 0.08);
 
   static const Color primary = AppColors.darkPrimary;
   static const Color primaryDark = AppColors.lightPrimary;
@@ -102,33 +102,34 @@ class AppTheme {
         headlineMedium: GoogleFonts.dmSans(
           color: AppColors.lightTextPrimary,
           fontWeight: FontWeight.w600,
-          fontSize: 22,
+          fontSize: 26,
         ),
         titleLarge: GoogleFonts.dmSans(
           color: AppColors.lightTextPrimary,
           fontWeight: FontWeight.w600,
-          fontSize: 18,
+          fontSize: 22,
         ),
         titleMedium: GoogleFonts.dmSans(
           color: AppColors.lightTextPrimary,
           fontWeight: FontWeight.w500,
-          fontSize: 16,
+          fontSize: 18,
         ),
         bodyLarge: GoogleFonts.dmSans(
           color: AppColors.lightTextPrimary,
-          fontSize: 16,
+          fontSize: 18,
         ),
         bodyMedium: GoogleFonts.dmSans(
           color: AppColors.lightTextSecondary,
-          fontSize: 14,
+          fontSize: 16,
         ),
         bodySmall: GoogleFonts.dmSans(
           color: AppColors.lightTextTertiary,
-          fontSize: 12,
+          fontSize: 14,
         ),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.lightSurface,
+        backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         foregroundColor: AppColors.lightTextPrimary,
         elevation: 0,
         centerTitle: false,
@@ -145,7 +146,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.lightBorder, width: 1),
+          side:  BorderSide(color: AppColors.lightBorder, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -153,7 +154,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        side: const BorderSide(color: AppColors.lightBorder, width: 1),
+        side:  BorderSide(color: AppColors.lightBorder, width: 1),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -179,7 +180,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.lightBorder, width: 1),
+          borderSide:  BorderSide(color: AppColors.lightBorder, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -201,6 +202,11 @@ class AppTheme {
         foregroundColor: AppColors.lightOnPrimary,
         elevation: 2,
         shape: CircleBorder(),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
     );
   }
@@ -241,33 +247,34 @@ class AppTheme {
         headlineMedium: GoogleFonts.dmSans(
           color: AppColors.darkTextPrimary,
           fontWeight: FontWeight.w600,
-          fontSize: 22,
+          fontSize: 26,
         ),
         titleLarge: GoogleFonts.dmSans(
           color: AppColors.darkTextPrimary,
           fontWeight: FontWeight.w600,
-          fontSize: 18,
+          fontSize: 22,
         ),
         titleMedium: GoogleFonts.dmSans(
           color: AppColors.darkTextPrimary,
           fontWeight: FontWeight.w500,
-          fontSize: 16,
+          fontSize: 18,
         ),
         bodyLarge: GoogleFonts.dmSans(
           color: AppColors.darkTextPrimary,
-          fontSize: 16,
+          fontSize: 18,
         ),
         bodyMedium: GoogleFonts.dmSans(
           color: AppColors.darkTextSecondary,
-          fontSize: 14,
+          fontSize: 16,
         ),
         bodySmall: GoogleFonts.dmSans(
-          color: AppColors.darkTextTertiary,
-          fontSize: 12,
+          color: AppColors.darkTextSecondary,
+          fontSize: 14,
         ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: false,
         iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
@@ -291,7 +298,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        side: const BorderSide(color: AppColors.darkGlassBorder, width: 1),
+        side: const BorderSide(color: Color.fromARGB(255, 26, 26, 26), width: 1),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -339,6 +346,11 @@ class AppTheme {
         foregroundColor: AppColors.darkOnPrimary,
         elevation: 3,
         shape: CircleBorder(),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
     );
   }

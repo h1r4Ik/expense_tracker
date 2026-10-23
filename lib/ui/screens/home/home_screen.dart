@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -23,46 +22,95 @@ class HomeScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final currentIndex = navigationShell.currentIndex;
 
-    final navBackground = isDark
-        ? const Color(0xFF121212).withValues(alpha: 0.72)
-        : Colors.white.withValues(alpha: 0.78);
+    final gradientColors = isDark
+        ? [
+            const Color(0xFF28282D).withValues(alpha: 0.88),
+            const Color(0xFF141416).withValues(alpha: 0.86),
+          ]
+        : [
+            Colors.white.withValues(alpha: 0.92),
+            const Color(0xFFF6F7F9).withValues(alpha: 0.84),
+            const Color(0xFFECEEF2).withValues(alpha: 0.88),
+          ];
+
     final borderColor = isDark
         ? const Color(0xFFFFFFFF).withValues(alpha: 0.12)
         : const Color(0xFF000000).withValues(alpha: 0.08);
     final activeColor = isDark ? Colors.white : Colors.black;
-    final inactiveColor = isDark ? const Color(0xFF7E7E7E) : const Color(0xFF8E8E93);
+    final inactiveColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
+    final surfaceColor = theme.scaffoldBackgroundColor;
+    final isStatementPreview = GoRouterState.of(context).uri.path == '/statements/preview';
 
     return Scaffold(
+      
       extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-              child: Container(
-                height: 68,
+        bottomNavigationBar: isStatementPreview
+          ? null
+          : SafeArea(
+        child: SizedBox(
+          height: 90,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          surfaceColor.withValues(alpha: 0.0),
+                          surfaceColor.withValues(alpha: 0.72),
+                          surfaceColor,
+                        ],
+                        
+                        stops: const [0.0, 0.52, 1.0],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                          offset: const Offset(0, -2),
+                        ),
+                      ]
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 10,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(36),
+                  child: Container(
+                    height: 80,
                 decoration: BoxDecoration(
-                  color: navBackground,
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: borderColor, width: 1),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: gradientColors,
+                  ),
+                  borderRadius: BorderRadius.circular(36),
+                  border: Border.all(color: borderColor, width: 0.9),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
-                      blurRadius: 28,
+                      blurRadius: 32,
                       spreadRadius: 2,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Row(
+                  child: Row(
                   children: [
-                    // Tab 0: Home
+                    // Tab 0: Home / Dashboard
                     Expanded(
                       child: _NavButton(
-                        icon: LucideIcons.house,
+                        inactiveIcon: LucideIcons.house,
+                        activeIcon: LucideIcons.house,
                         label: 'Home',
                         isSelected: currentIndex == 0,
                         activeColor: activeColor,
@@ -74,7 +122,8 @@ class HomeScreen extends StatelessWidget {
                     // Tab 1: Log
                     Expanded(
                       child: _NavButton(
-                        icon: LucideIcons.clipboardList,
+                        inactiveIcon: LucideIcons.clipboardList,
+                        activeIcon: LucideIcons.clipboardCheck,
                         label: 'Log',
                         isSelected: currentIndex == 1,
                         activeColor: activeColor,
@@ -96,7 +145,8 @@ class HomeScreen extends StatelessWidget {
                     // Tab 2: Statements
                     Expanded(
                       child: _NavButton(
-                        icon: LucideIcons.fileText,
+                        inactiveIcon: LucideIcons.fileText,
+                        activeIcon: LucideIcons.fileText,
                         label: 'Statements',
                         isSelected: currentIndex == 2,
                         activeColor: activeColor,
@@ -108,7 +158,8 @@ class HomeScreen extends StatelessWidget {
                     // Tab 3: Settings / Profile
                     Expanded(
                       child: _NavButton(
-                        icon: LucideIcons.user,
+                        inactiveIcon: LucideIcons.userRound,
+                        activeIcon: LucideIcons.userRound,
                         label: 'Profile',
                         isSelected: currentIndex == 3,
                         activeColor: activeColor,
@@ -117,9 +168,11 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -128,15 +181,17 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _NavButton extends StatelessWidget {
-  final IconData icon;
+  final IconData inactiveIcon;
   final String label;
   final bool isSelected;
   final Color activeColor;
   final Color inactiveColor;
   final VoidCallback onTap;
+  final IconData activeIcon;
 
   const _NavButton({
-    required this.icon,
+    required this.inactiveIcon,
+    required this.activeIcon,
     required this.label,
     required this.isSelected,
     required this.activeColor,
@@ -147,21 +202,21 @@ class _NavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected ? activeColor : inactiveColor;
-
+    final icon = isSelected ? activeIcon : inactiveIcon; // You can change the icon if needed for selected state
     return Material(
       color: Colors.transparent,
-      child: InkWell(
+      child: 
+      InkWell(
         onTap: onTap,
         highlightColor: Colors.transparent,
         splashColor: Colors.transparent,
-        child: SizedBox(
-          height: double.infinity,
+        child: SizedBox.expand(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 22,
+                size: 24,
                 color: color,
               ),
               const SizedBox(height: 3),
@@ -204,8 +259,8 @@ class _CenterAddButton extends StatelessWidget {
           onTap: onTap,
           customBorder: const CircleBorder(),
           child: Container(
-            width: 44,
-            height: 44,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: buttonBg,
               shape: BoxShape.circle,
@@ -219,7 +274,7 @@ class _CenterAddButton extends StatelessWidget {
             ),
             child: Icon(
               LucideIcons.plus,
-              size: 22,
+              size: 24,
               color: buttonFg,
             ),
           ),

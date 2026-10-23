@@ -22,13 +22,13 @@ class AppConstants {
   static const String localUserIdKey = '${keyPrefix}local_user_id';
 
   // Limits
-  static const int maxAccounts = 2;
+  static const int maxAccounts = 4;
   static const int syncBatchSize = 10;
   static const int maxSyncRetries = 3;
   static const Duration syncRetryDelay = Duration(seconds: 2);
 
   // UI
-  static const double cardRadius = 16.0;
-  static const double inputRadius = 14.0;
-  static const double chipRadius = 12.0;
+  static const double cardRadius = 23.0;
+  static const double inputRadius = 23.0;
+  static const double chipRadius = 23.0;
 }

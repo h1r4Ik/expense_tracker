@@ -52,6 +52,11 @@ class TransactionRepository {
     );
   }
 
+  /// Saves a transaction directly to local storage without re-enqueueing to outbound sync queue (used when pulling from cloud/stream).
+  Future<void> saveDirect(String accountId, ExpenseTransaction txn) async {
+    await _local.addTransaction(accountId, txn);
+  }
+
   /// Updates existing transaction locally with pendingSync status and queues it for sync.
   Future<void> update(String accountId, ExpenseTransaction txn) async {
     final localTxn = txn.copyWith(

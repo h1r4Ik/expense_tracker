@@ -12,6 +12,9 @@ import '../../../data/models/transaction_model.dart';
 import '../../../logic/providers/auth_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
 import '../../widgets/category/category_chip.dart';
+import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/frosted_header_bar.dart';
+import '../../widgets/common/glass_container.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final String? transactionId;
@@ -186,6 +189,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     if (mounted) {
+      AppSnackbar.show(
+        context,
+        message: _isEdit ? 'Transaction updated' : 'Transaction added',
+        isSuccess: true,
+      );
       context.pop();
     }
   }
@@ -202,7 +210,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          TextButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.semanticRed,
               foregroundColor: Colors.white,
@@ -220,6 +228,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           .read<TransactionProvider>()
           .deleteTransaction(_existingTx!.id, accountId: auth.activeAccountId);
       if (mounted) {
+        AppSnackbar.show(
+          context,
+          message: 'Transaction deleted',
+          icon: LucideIcons.trash2,
+          isError: true,
+        );
         context.pop();
       }
     }
@@ -232,28 +246,61 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final categories = CategoryData.getCategoriesForType(_type);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? 'Edit Transaction' : 'New Transaction'),
-        actions: [
-          IconButton(
-            tooltip: 'Save',
-            icon: const Icon(LucideIcons.check, size: 22),
-            onPressed: _save,
+      extendBodyBehindAppBar: true,
+      appBar: FrostedHeaderBar(
+        leading: GlassContainer(
+          shape: BoxShape.circle,
+          padding: const EdgeInsets.all(10),
+          onTap: () => context.pop(),
+          child: Icon(
+            LucideIcons.arrowLeft,
+            size: 20,
+            color: theme.colorScheme.onSurface,
           ),
-          const SizedBox(width: 8),
+        ),
+        title: Center(
+          child: GlassContainer(
+            borderRadius: 30,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+            child: Text(
+              _isEdit ? 'Edit Transaction' : 'New Transaction',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          GlassContainer(
+            shape: BoxShape.circle,
+            padding: const EdgeInsets.all(10),
+            onTap: _save,
+            child: Icon(
+              LucideIcons.check,
+              size: 20,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
         ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            MediaQuery.of(context).padding.top + 68,
+            20,
+            40,
+          ),
           children: [
             // Expense / Income Segmented Toggle
             Container(
               height: 48,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
                 children: [
@@ -267,7 +314,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           color: _type == TransactionType.expense
                               ? (isDark ? Colors.white : Colors.black)
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -293,7 +340,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           color: _type == TransactionType.income
                               ? (isDark ? Colors.white : Colors.black)
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -329,6 +376,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 prefixStyle: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+                ),
                 hintText: '0.00',
               ),
               validator: Validators.amount,
@@ -339,9 +389,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             // Title Field
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
+              decoration:  InputDecoration(
                 labelText: 'Title',
                 hintText: 'e.g. Grocery shopping, Salary',
+                  border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.inputRadius),
+                ),
               ),
               validator: (v) => Validators.requiredField(v, 'Title'),
             ),
@@ -523,38 +576,51 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 hintText: 'Add extra details or reminders...',
               ),
             ),
+            const SizedBox(height: 20),
 
-            const SizedBox(height: 32),
-
-            // Save Button (Full Width)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _save,
-                child: Text(_isEdit ? 'Update Transaction' : 'Save Transaction'),
-              ),
-            ),
-
-            // Delete Button (Edit Mode Only)
-            if (_isEdit) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton.icon(
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.semanticRed,
-                  ),
-                  onPressed: _delete,
-                  icon: const Icon(LucideIcons.trash2, size: 16),
-                  label: const Text(
-                    'Delete Transaction',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+               SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? Colors.white : Colors.black,
+                      foregroundColor: isDark ? Colors.black : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: _save,
+                    child: Text(
+                      _isEdit ? 'Update Transaction' : 'Save Transaction',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                if (_isEdit) ...[
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.semanticRed,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: _delete,
+                    icon: const Icon(LucideIcons.trash2, size: 18),
+                    label: const Text(
+                      'Delete Transaction',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    ),
+                  ),
+                ],
+              
           ],
         ),
       ),
-    );
+     );
   }
 }

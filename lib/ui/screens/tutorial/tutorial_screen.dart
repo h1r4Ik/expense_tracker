@@ -42,7 +42,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           'Generate and preview clean, professional PDF statements for any customized date range.',
     ),
     _TutorialPageData(
-      icon: LucideIcons.users,
+      icon: LucideIcons.usersRound,
       title: 'Group Sharing',
       description:
           'Collaborate on shared expenses with offline-first synchronization across members.',
@@ -200,7 +200,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   const SizedBox(height: 28),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: TextButton(
                       onPressed: _onNext,
                       child: Text(isLastPage ? 'Get Started' : 'Next'),
                     ),

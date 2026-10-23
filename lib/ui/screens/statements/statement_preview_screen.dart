@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../../data/services/pdf_export_service.dart';
 import '../../../logic/providers/auth_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/common/frosted_header_bar.dart';
+import '../../widgets/common/glass_container.dart';
 
 class StatementPreviewScreen extends StatefulWidget {
   final DateTime from;
@@ -72,41 +74,107 @@ class _StatementPreviewScreenState extends State<StatementPreviewScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Statement Preview'),
-        actions: [
-          IconButton(
-            tooltip: 'Print Statement',
-            icon: const Icon(LucideIcons.printer, size: 20),
-            onPressed: _handlePrint,
-          ),
-          const SizedBox(width: 8),
-        ],
+    // Force always light mode theme for printing & preview canvas
+    final lightThemeData = ThemeData.light(useMaterial3: true).copyWith(
+      scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+      colorScheme: const ColorScheme.light(
+        primary: Color(0xFF111827),
+        onPrimary: Colors.white,
+        secondary: Color(0xFF4B5563),
+        onSecondary: Colors.white,
+        surface: Colors.white,
+        onSurface: Color(0xFF111827),
+        error: Color(0xFFB91C1C),
+        onError: Colors.white,
       ),
-      body: PdfPreview(
-        build: (format) => _buildPdf(),
-        canChangeOrientation: false,
-        canChangePageFormat: false,
-        canDebug: false,
-        allowPrinting: true,
-        allowSharing: true,
-        loadingWidget: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              isDark ? Colors.white : Colors.black,
-            ),
+      iconTheme: const IconThemeData(color: Color(0xFF111827)),
+    );
+
+    return Scaffold(
+      appBar: FrostedHeaderBar(
+        leading: GlassContainer(
+          shape: BoxShape.circle,
+          padding: const EdgeInsets.all(10),
+          onTap: () => Navigator.of(context).maybePop(),
+          child: Icon(
+            LucideIcons.chevronLeft,
+            size: 20,
+            color: isDark ? Colors.white : Colors.black,
           ),
         ),
-        pdfPreviewPageDecoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+        title: GlassContainer(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          borderRadius: 20,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                LucideIcons.fileSpreadsheet,
+                size: 20,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Statement Preview',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          GlassContainer(
+            shape: BoxShape.circle,
+            padding: const EdgeInsets.all(10),
+            onTap: _handlePrint,
+            child: Icon(
+              LucideIcons.printer,
+              size: 20,
+              color: isDark ? Colors.white : Colors.black,
             ),
-          ],
+          ),
+        ],
+      ),
+      body: Theme(
+        data: lightThemeData,
+        child: PdfPreview(
+          build: (format) => _buildPdf(),
+          maxPageWidth: MediaQuery.sizeOf(context).width - 24,
+          canChangeOrientation: false,
+          canChangePageFormat: false,
+          canDebug: false,
+          scrollViewDecoration:  BoxDecoration(
+            color: isDark ? Color.fromARGB(255, 0, 0, 0) : Color(0xFFF3F4F6),
+          ),
+          previewPageMargin: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 12,
+          ),
+          actionBarTheme:PdfActionBarTheme(
+            backgroundColor: Color(0xFFE5E7EB),
+            iconColor: Color(0xFF111827),
+            elevation: 2,
+            height: 64,
+          ),
+          loadingWidget: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+            ),
+          ),
+          pdfPreviewPageDecoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
         ),
       ),
     );

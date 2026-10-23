@@ -92,6 +92,19 @@ class FirebaseAuthService {
     }
   }
 
+  /// Permanently delete the current Firebase Auth user
+  Future<void> deleteUserAccount() async {
+    try {
+      final user = _auth?.currentUser;
+      if (user != null) {
+        await user.delete();
+      }
+    } catch (e) {
+      debugPrint('Error deleting user from Firebase Auth: $e');
+      // If requires-recent-login or network error, still allow local cleanup
+    }
+  }
+
   /// Converts Firebase Auth errors into clear, user-friendly messages
   static String getReadableErrorMessage(dynamic error) {
     if (error is FirebaseAuthException) {

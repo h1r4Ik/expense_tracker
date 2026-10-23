@@ -11,6 +11,8 @@ import '../../../logic/providers/auth_provider.dart';
 import '../../../logic/providers/sync_provider.dart';
 import '../../../logic/providers/theme_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/common/frosted_header_bar.dart';
+import '../../widgets/common/glass_container.dart';
 import '../../widgets/common/section_header.dart';
 import '../../widgets/transaction/transaction_tile.dart';
 
@@ -61,18 +63,33 @@ class _DashboardViewState extends State<DashboardView>
     showModalBottomSheet(
       context: context,
       backgroundColor: theme.colorScheme.surface,
+      
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: isDark ? const Color(0xFFFFFFFF).withValues(alpha: 0.12) : const Color(0xFF000000).withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Padding(padding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 3),
+                child: 
+
                 Row(
+                  
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
@@ -81,14 +98,17 @@ class _DashboardViewState extends State<DashboardView>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      '${auth.accounts.length}/${AppConstants.maxAccounts} slots',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    GestureDetector(
+                      onTap: () => context.push('/settings/accounts') ,
+                      child: Icon(
+                        LucideIcons.plus,
+                        size: 22,
+                        color: theme.colorScheme.primary,
                       ),
                     ),
+               
                   ],
-                ),
+                ),),
                 const SizedBox(height: 16),
                 ...auth.accounts.map((acc) {
                   final isActive = acc.id == auth.activeAccountId;
@@ -107,7 +127,7 @@ class _DashboardViewState extends State<DashboardView>
                           color: isActive
                               ? theme.colorScheme.primary.withValues(alpha: 0.08)
                               : (isDark ? const Color(0xFF161616) : const Color(0xFFF3F4F6)),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(30),
                           border: Border.all(
                             color: isActive
                                 ? theme.colorScheme.primary
@@ -118,7 +138,7 @@ class _DashboardViewState extends State<DashboardView>
                         child: Row(
                           children: [
                             Icon(
-                              acc.isGroup ? LucideIcons.users : LucideIcons.user,
+                              acc.isGroup ? LucideIcons.usersRound : LucideIcons.userRound,
                               size: 20,
                               color: isActive
                                   ? theme.colorScheme.primary
@@ -154,40 +174,6 @@ class _DashboardViewState extends State<DashboardView>
                     ),
                   );
                 }),
-                if (auth.canAddAccount) ...[
-                  const SizedBox(height: 4),
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context.push('/settings/groups');
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark ? const Color(0xFF333333) : const Color(0xFFD1D5DB),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.plus, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Add / Join Group (Slot 2)',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -205,6 +191,7 @@ class _DashboardViewState extends State<DashboardView>
     final themeProvider = context.watch<ThemeProvider>();
     final syncProvider = context.watch<SyncProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final pendingCount = txProvider.pendingSyncCount;
 
     // Ensure TransactionProvider stays in sync with AuthProvider's active account
     if (authProvider.activeAccount != null &&
@@ -258,134 +245,111 @@ class _DashboardViewState extends State<DashboardView>
     final isGroupAccount = authProvider.activeAccount?.isGroup == true;
 
     return Scaffold(
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () => _showAccountSwitcher(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161616) : const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(
-                color: isDark ? const Color(0xFF262626) : const Color(0xFFE5E7EB),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? const Color.fromARGB(255, 147, 143, 143).withValues(alpha: 0.3)
-                      : Colors.grey.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isGroupAccount ? LucideIcons.users : LucideIcons.user,
-                  size: 20,
-                  color: theme.colorScheme.onSurface,
-                ),
-                const SizedBox(width: 6),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 150),
-                  child: Text(
-                    authProvider.activeAccount?.nameOrDefault ?? 'Expense Tracker',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+      extendBodyBehindAppBar: true,
+      appBar: FrostedHeaderBar(
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Builder(
+            builder: (context) {
+              return GlassContainer(
+                borderRadius: 30,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                onTap: () => _showAccountSwitcher(context),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isGroupAccount ? LucideIcons.usersRound : LucideIcons.userRound,
+                      size: 19,
+                      color: theme.colorScheme.onSurface,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    const SizedBox(width: 8),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 140),
+                      child: Text(
+                        authProvider.activeAccount?.nameOrDefault ?? 'Expense Tracker',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          letterSpacing: -0.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      LucideIcons.chevronDown,
+                      size: 17,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  LucideIcons.chevronDown,
-                  size: 18,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ],
-            ),
+              );
+            }
           ),
         ),
         actions: [
-           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161616) : const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(
-                color: isDark ? const Color(0xFF262626) : const Color(0xFFE5E7EB),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? const Color.fromARGB(255, 147, 143, 143).withValues(alpha: 0.3)
-                      : Colors.grey.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child:
-         GestureDetector(
+          GlassContainer(
+            shape:pendingCount > 0 ? BoxShape.circle : BoxShape.rectangle,
+            padding: pendingCount > 0
+                ? const EdgeInsets.symmetric(horizontal: 10, vertical: 6)
+                : const EdgeInsets.all(10),
             onTap: () {
               final activeId = authProvider.activeAccountId;
               if (activeId != null && activeId.isNotEmpty) {
                 syncProvider.syncNow(activeId);
               }
             },
-            child:  RotationTransition(
-              turns: _syncAnimController,
-              child: Icon(
-                LucideIcons.refreshCw,
-                size: 20,
+            child: Row(
+              children: [
+                
+                RotationTransition(
+                  turns: _syncAnimController,
+                  child: Icon(
+                    LucideIcons.refreshCw,
+                    size: 20,
                 color: syncProvider.isSyncing
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
-          ),),
+                if (pendingCount > 0)
+                const SizedBox(width: 6),
+                if (pendingCount > 0)
+                   Text(
+                      pendingCount.toString(),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  
+         ], )),
           const SizedBox(width: 10),
-
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161616) : const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(
-                color: isDark ? const Color(0xFF262626) : const Color(0xFFE5E7EB),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? const Color.fromARGB(255, 147, 143, 143).withValues(alpha: 0.3)
-                      : Colors.grey.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child:
-         GestureDetector(
+          GlassContainer(
+            shape: BoxShape.circle,
+            padding: const EdgeInsets.all(10),
             onTap: () => themeProvider.toggleTheme(),
             child: Icon(
               isDark ? LucideIcons.sun : LucideIcons.moon,
               size: 20,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
-          ),),
-          const SizedBox(width: 8),
+          ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
         color: isDark ? Colors.white : Colors.black,
         backgroundColor: theme.colorScheme.surface,
+        edgeOffset: MediaQuery.of(context).padding.top + 60,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 110),
+          padding: EdgeInsets.fromLTRB(
+            0,
+            MediaQuery.of(context).padding.top + 68,
+            0,
+            110,
+          ),
           children: [
             const SizedBox(height: 12),
             // Balance Card
@@ -400,7 +364,7 @@ class _DashboardViewState extends State<DashboardView>
                     width: 1,
                   ),
                 ),
-                color: theme.colorScheme.surface,
+                color:Theme.of(context).cardTheme.color,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -427,7 +391,7 @@ class _DashboardViewState extends State<DashboardView>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  isGroupAccount ? LucideIcons.users : LucideIcons.user,
+                                  isGroupAccount ? LucideIcons.usersRound : LucideIcons.userRound,
                                   size: 12,
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                                 ),
@@ -515,10 +479,11 @@ class _DashboardViewState extends State<DashboardView>
                               width: 1,
                               color: isDark ? const Color.fromARGB(255, 111, 111, 111) : const Color.fromARGB(255, 177, 179, 185),
                             ),
-                            const SizedBox(width: 12),
                             // Expense
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   Container(
                                     width: 32,
@@ -618,10 +583,11 @@ class _DashboardViewState extends State<DashboardView>
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                 child: Center(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        LucideIcons.receiptText,
-                        size: 40,
+                        LucideIcons.inbox,
+                        size: 48,
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                       ),
                       const SizedBox(height: 12),
@@ -725,7 +691,7 @@ class _QuickStatCard extends StatelessWidget {
           Text(
             'Net savings',
             style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 10,
+              fontSize: 12,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ),

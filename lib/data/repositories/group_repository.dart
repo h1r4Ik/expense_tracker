@@ -75,8 +75,72 @@ class GroupRepository {
     return group;
   }
 
-  Future<List<GroupModel>> fetchRemoteGroups() async {
-    return await _remote.fetchUserGroups();
+  Future<List<GroupModel>> fetchRemoteGroups([String? userId]) async {
+    return await _remote.fetchUserGroups(userId);
+  }
+
+  Future<void> leaveGroup({
+    required String groupId,
+    required String userId,
+    String? accountId,
+  }) async {
+    await _remote.leaveGroup(groupId: groupId, userId: userId);
+    if (accountId != null && accountId.isNotEmpty) {
+      final cached = await _local.getCachedGroups(accountId);
+      cached.removeWhere((g) => g.id == groupId);
+      await _local.saveGroups(accountId, cached);
+      final activeGroupId = await _local.getActiveGroupId(accountId);
+      if (activeGroupId == groupId) {
+        await _local.setActiveGroupId(accountId, null);
+      }
+    }
+  }
+  Future<void> kickMember({
+    required String groupId,
+    required String memberId,
+    String? accountId,
+  }) async {
+    await _remote.kickMember(groupId: groupId, memberId: memberId);
+    if (accountId != null && accountId.isNotEmpty) {
+      final cached = await _local.getCachedGroups(accountId);
+      final idx = cached.indexWhere((g) => g.id == groupId);
+      if (idx >= 0) {
+        final group = cached[idx];
+        final updatedMembers = List<String>.from(group.members)..remove(memberId);
+        final updatedRoles = Map<String, String>.from(group.memberRoles)..remove(memberId);
+        final updatedNames = Map<String, String>.from(group.memberNames)..remove(memberId);
+        cached[idx] = group.copyWith(
+          members: updatedMembers,
+          memberRoles: updatedRoles,
+          memberNames: updatedNames,
+        );
+        await _local.saveGroups(accountId, cached);
+      }
+    }
+  }
+
+  Future<void> updateMemberRole({
+    required String groupId,
+    required String memberId,
+    required String newRole,
+    String? accountId,
+  }) async {
+    await _remote.updateMemberRole(
+      groupId: groupId,
+      memberId: memberId,
+      newRole: newRole,
+    );
+    if (accountId != null && accountId.isNotEmpty) {
+      final cached = await _local.getCachedGroups(accountId);
+      final idx = cached.indexWhere((g) => g.id == groupId);
+      if (idx >= 0) {
+        final group = cached[idx];
+        final updatedRoles = Map<String, String>.from(group.memberRoles);
+        updatedRoles[memberId] = newRole;
+        cached[idx] = group.copyWith(memberRoles: updatedRoles);
+        await _local.saveGroups(accountId, cached);
+      }
+    }
   }
 
   Future<void> syncGroupToRemote(GroupModel group) async {
