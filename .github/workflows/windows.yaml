@@ -143,7 +143,12 @@ jobs:
         run: yes | flutter doctor --android-licenses
 
       - name: Install required Android NDK
-        run: sdkmanager --install "ndk;30.0.14904198"
+        run: |
+          SDKMANAGER="${ANDROID_SDK_ROOT:-$ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="${ANDROID_SDK_ROOT:-$ANDROID_HOME}/tools/bin/sdkmanager"
+          fi
+          "$SDKMANAGER" --install "ndk;30.0.14904198"
 
       - name: Build Android APK
         run: flutter build apk --release
