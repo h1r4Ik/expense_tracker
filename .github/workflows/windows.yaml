@@ -86,17 +86,23 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Get dependencies
         run: flutter pub get
 
       - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses
+        run: yes | flutter doctor --android-licenses
 
       - name: Install required Android NDK
-        run: sdkmanager --install "ndk;30.0.14904198"
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager"
+          fi
+          if [ ! -x "$SDKMANAGER" ]; then
+            echo "Android sdkmanager not found under $ANDROID_HOME/cmdline-tools" >&2
+            exit 1
+          fi
+          "$SDKMANAGER" --install "ndk;30.0.14904198"
 
       - name: Build Android APK
         run: flutter build apk --release
