@@ -164,14 +164,18 @@ class UpdateService {
         return null;
       } else if (effectiveGist != null) {
         return await _checkGistFallback(effectiveGist);
+      } else {
+        throw HttpException(
+          'GitHub release check failed with HTTP ${response.statusCode}',
+        );
       }
     } catch (e) {
       debugPrint('Update check error: $e');
       if (effectiveGist != null) {
         return await _checkGistFallback(effectiveGist);
       }
+      rethrow;
     }
-    return null;
   }
 
   /// Fallback check via raw Gist

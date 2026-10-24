@@ -10,6 +10,7 @@ import '../../../logic/providers/sync_provider.dart';
 import '../../../logic/providers/theme_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
 import '../../../data/services/system_notification_service.dart';
+import '../../../data/services/update_service.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/frosted_header_bar.dart';
 import '../../widgets/common/glass_container.dart';
@@ -386,13 +387,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _SettingsItem(
         icon: LucideIcons.sparkles,
         title: 'Check for Updates',
-        valueText: ' v2.0.1',
-        onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'You are on the latest release  v2.0.1',
-            icon: LucideIcons.sparkles,
-          );
+        valueText: 'Check now',
+        onTap: () async {
+          try {
+            final update = await UpdateService.checkForUpdates();
+            if (!context.mounted) return;
+
+            if (update == null) {
+              final currentVersion = await UpdateService.getCurrentAppVersion();
+              if (!context.mounted) return;
+              AppSnackbar.show(
+                context,
+                message: 'You are on the latest release v$currentVersion',
+                icon: LucideIcons.sparkles,
+              );
+              return;
+            }
+
+            AppSnackbar.show(
+              context,
+              message: 'Update available: v${update.latestVersion}',
+              icon: LucideIcons.sparkles,
+              isSuccess: true,
+            );
+          } catch (error) {
+            if (!context.mounted) return;
+            AppSnackbar.show(
+              context,
+              message: 'Unable to check for updates. Please try again.',
+              icon: LucideIcons.circleAlert,
+            );
+          }
         },
       ),
    ];
