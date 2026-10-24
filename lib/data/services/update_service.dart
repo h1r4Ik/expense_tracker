@@ -48,8 +48,8 @@ class UpdateService {
   static UpdateInfo? currentUpdateInfo;
 
   // GitHub repository details (can be customized via environment or config)
-  static String githubOwner = 'hardikm1410';
-  static String githubRepo = 'Hermes-Expense-Tracker';
+  static String githubOwner = 'h1r4Ik';
+  static String githubRepo = 'expense_tracker';
 
   // Optional GitHub token
   static String githubToken = '';
