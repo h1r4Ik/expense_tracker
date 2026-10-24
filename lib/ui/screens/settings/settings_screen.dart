@@ -368,13 +368,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: 'Demo Notification',
         valueText: 'Send Test',
         onTap: () {
+          final accountName = auth.activeAccount?.nameOrDefault ?? 'Account';
           SystemNotificationService.show(
-            title: 'Hermes Shared Ledger',
+            title: accountName,
             message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
           );
           TopNotificationService.show(
             context: context,
-            title: 'Hermes Shared Ledger',
+            title: accountName,
             message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
             type: TopNotificationType.info,
             icon: LucideIcons.receipt,

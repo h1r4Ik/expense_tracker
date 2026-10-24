@@ -41,13 +41,15 @@ class _DashboardViewState extends State<DashboardView>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 600), () {
         if (!mounted) return;
+        final accountName =
+            context.read<AuthProvider>().activeAccount?.nameOrDefault ?? 'Account';
         SystemNotificationService.show(
-          title: 'Hermes Shared Ledger',
+          title: accountName,
           message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
         );
         TopNotificationService.show(
           context: context,
-          title: 'Hermes Shared Ledger',
+          title: accountName,
           message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
           type: TopNotificationType.info,
           icon: LucideIcons.receipt,

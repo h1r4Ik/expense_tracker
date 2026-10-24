@@ -139,6 +139,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Accept Android SDK licenses
+        run: yes | flutter doctor --android-licenses
+
+      - name: Install required Android NDK
+        run: sdkmanager --install "ndk;30.0.14904198"
+
       - name: Build Android APK
         run: flutter build apk --release
 
