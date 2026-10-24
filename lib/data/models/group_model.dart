@@ -26,7 +26,7 @@ class GroupModel {
   });
 
   bool isMember(String userId) => members.contains(userId);
-  bool isAdmin(String userId) => memberRoles[userId] == 'admin';
+  bool isAdmin(String userId) => memberRoles[userId] == 'admin' || createdBy == userId;
   String getMemberName(String userId) => memberNames[userId] ?? 'Member';
 
   Map<String, dynamic> toJson() {

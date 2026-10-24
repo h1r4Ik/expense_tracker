@@ -5,6 +5,8 @@ import 'app.dart';
 import 'data/services/local_storage_service.dart';
 import 'data/services/firebase_auth_service.dart';
 import 'data/services/firebase_sync_service.dart';
+import 'data/services/group_notification_service.dart';
+import 'data/services/system_notification_service.dart';
 import 'data/repositories/transaction_repository.dart';
 import 'data/repositories/group_repository.dart';
 import 'data/repositories/auth_repository.dart';
@@ -17,6 +19,9 @@ import 'logic/providers/sync_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize System Notifications
+  await SystemNotificationService.initialize();
 
   // Initialize Firebase
   try {
@@ -35,6 +40,13 @@ void main() async {
   final txnRepo = TransactionRepository(local: localStorage, remote: firebaseSync);
   final groupRepo = GroupRepository(local: localStorage, remote: firebaseSync);
 
+  // Create notification service for group ledgers
+  final navigatorKey = GlobalKey<NavigatorState>();
+  final groupNotificationService = GroupNotificationService(
+    txnRepo: txnRepo,
+    groupRepo: groupRepo,
+  )..setNavigatorKey(navigatorKey);
+
   // Create sync engine
   final syncEngine = SyncEngine(local: localStorage, remote: firebaseSync);
 
@@ -45,16 +57,20 @@ void main() async {
   final authProvider = AuthProvider(repo: authRepo);
   await authProvider.initialize();
 
-  // Link primary user ID to Firebase sync if an account is already logged in
+  // Link primary user ID to Firebase sync and notification service
   final primaryUserId = authProvider.primaryUserId ?? authProvider.activeAccountId;
   if (primaryUserId != null && primaryUserId.isNotEmpty) {
     firebaseSync.setFallbackUserId(primaryUserId);
     firebaseSync.setUserId(primaryUserId);
+    groupNotificationService.setCurrentUser(primaryUserId);
   }
 
   // Pre-load transactions and groups for the active account if logged in
   final txnProvider = TransactionProvider(repo: txnRepo, syncEngine: syncEngine);
-  final groupProvider = GroupProvider(repo: groupRepo);
+  final groupProvider = GroupProvider(
+    repo: groupRepo,
+    notificationService: groupNotificationService,
+  );
   if (authProvider.hasActiveAccount && authProvider.activeAccountId != null) {
     txnProvider.updateActiveAccount(authProvider.activeAccount);
     final groupLookupId = primaryUserId ?? authProvider.activeAccountId!;
@@ -71,8 +87,14 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => SyncProvider(engine: syncEngine),
         ),
+        Provider<GroupNotificationService>.value(
+          value: groupNotificationService,
+        ),
       ],
-      child: const ExpenseTrackerApp(),
+      child: ExpenseTrackerApp(
+        rootNavigatorKey: navigatorKey,
+        notificationService: groupNotificationService,
+      ),
     ),
   );
 }

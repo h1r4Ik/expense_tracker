@@ -9,9 +9,11 @@ import '../../../logic/providers/group_provider.dart';
 import '../../../logic/providers/sync_provider.dart';
 import '../../../logic/providers/theme_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../../data/services/system_notification_service.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/frosted_header_bar.dart';
 import '../../widgets/common/glass_container.dart';
+import '../../widgets/common/top_notification.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -362,20 +364,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       _SettingsItem(
-        icon: LucideIcons.fileSpreadsheet,
-        title: 'Export Statements',
-        valueText: 'PDF',
-        onTap: () => context.go('/statements'),
+        icon: LucideIcons.bellRing,
+        title: 'Demo Notification',
+        valueText: 'Send Test',
+        onTap: () {
+          SystemNotificationService.show(
+            title: 'Hermes Shared Ledger',
+            message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
+          );
+          TopNotificationService.show(
+            context: context,
+            title: 'Hermes Shared Ledger',
+            message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
+            type: TopNotificationType.info,
+            icon: LucideIcons.receipt,
+            duration: const Duration(seconds: 4),
+          );
+        },
       ),
-     
       _SettingsItem(
         icon: LucideIcons.sparkles,
         title: 'Check for Updates',
-        valueText: 'v2.0.0',
+        valueText: ' v2.0.1',
         onTap: () {
           AppSnackbar.show(
             context,
-            message: 'You are on the latest release v2.0.0',
+            message: 'You are on the latest release  v2.0.1',
             icon: LucideIcons.sparkles,
           );
         },
@@ -671,7 +685,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // App Version footer
           Center(
             child: Text(
-              'v2.0.0',
+              ' v2.0.1',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
                 fontWeight: FontWeight.w500,

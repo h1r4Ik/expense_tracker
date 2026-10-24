@@ -5,20 +5,28 @@ import 'package:flutter/material.dart';
 import '../../data/models/group_model.dart';
 import '../../data/repositories/group_repository.dart';
 
+import '../../data/services/group_notification_service.dart';
+
 class GroupProvider extends ChangeNotifier {
   final GroupRepository _repo;
+  final GroupNotificationService? _notificationService;
 
   List<GroupModel> _groups = [];
   String? _activeGroupId;
   bool _isLoading = false;
   String? _error;
 
-  GroupProvider({required GroupRepository repo}) : _repo = repo;
+  GroupProvider({
+    required GroupRepository repo,
+    GroupNotificationService? notificationService,
+  })  : _repo = repo,
+        _notificationService = notificationService;
 
   List<GroupModel> get groups => List.unmodifiable(_groups);
   String? get activeGroupId => _activeGroupId;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  GroupNotificationService? get notificationService => _notificationService;
 
   // Backward-compatible family aliases
   List<GroupModel> get families => groups;
@@ -61,6 +69,11 @@ class GroupProvider extends ChangeNotifier {
       } catch (_) {
         // Offline — use cached data
       }
+
+      // Sync active group watchers in notification service
+      if (_notificationService != null && _groups.isNotEmpty) {
+        _notificationService.watchGroups(_groups, currentUserId: userId ?? accountId);
+      }
     } catch (e) {
       _error = e.toString();
       debugPrint('GroupProvider.loadGroups error: $e');
@@ -86,6 +99,7 @@ class GroupProvider extends ChangeNotifier {
         accountId: accountId,
       );
       _groups.removeWhere((g) => g.id == groupId);
+      _notificationService?.stopWatching(groupId);
       if (_activeGroupId == groupId) {
         _activeGroupId = null;
       }
@@ -208,6 +222,7 @@ class GroupProvider extends ChangeNotifier {
         _groups.add(group);
       }
       _activeGroupId = group.id;
+      _notificationService?.watchGroup(group, currentUserId: creatorId ?? accountId);
       notifyListeners();
       return group;
     } catch (e) {
@@ -260,6 +275,7 @@ class GroupProvider extends ChangeNotifier {
         _groups.add(group);
       }
       _activeGroupId = group.id;
+      _notificationService?.watchGroup(group, currentUserId: userId ?? accountId);
       notifyListeners();
       return group;
     } catch (e) {

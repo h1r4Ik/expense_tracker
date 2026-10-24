@@ -65,10 +65,16 @@ class FrostedHeaderBar extends StatelessWidget implements PreferredSizeWidget {
           children: [
             if (leading != null) ...[
               leading!,
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
             ],
             if (title != null) Expanded(child: title!),
-            ...?actions,
+            if (title != null && actions != null && actions!.isNotEmpty)
+              const SizedBox(width: 10),
+            if (actions != null)
+              for (int i = 0; i < actions!.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                actions![i],
+              ],
           ],
         ),
       ),

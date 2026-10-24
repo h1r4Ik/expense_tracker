@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/category_data.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../widgets/charts/expense_breakdown_section.dart';
 import '../../widgets/common/frosted_header_bar.dart';
 import '../../widgets/common/glass_container.dart';
 
@@ -122,14 +122,6 @@ class _StatementScreenState extends State<StatementScreen> {
 
     final netBalance = totalIncome - totalExpense;
     final isNetPositive = netBalance >= 0;
-
-    // Category breakdown for expenses
-    final Map<String, double> categoryMap = {};
-    for (final tx in filteredTx.where((t) => t.isExpense)) {
-      categoryMap[tx.category] = (categoryMap[tx.category] ?? 0.0) + tx.amount;
-    }
-    final sortedCategories = categoryMap.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -414,120 +406,10 @@ class _StatementScreenState extends State<StatementScreen> {
           const SizedBox(height: 24),
 
           // Category Breakdown
-          Text(
-            'Expense Breakdown',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+          ExpenseBreakdownSection(
+            expenseTransactions: filteredTx.where((tx) => tx.isExpense).toList(),
+            totalExpense: totalExpense,
           ),
-          const SizedBox(height: 10),
-
-          if (sortedCategories.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  'No expenses in this period',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                ),
-              ),
-            )
-          else
-            ...sortedCategories.map((entry) {
-              final catName = entry.key;
-              final catAmount = entry.value;
-              final pct = totalExpense > 0 ? (catAmount / totalExpense) : 0.0;
-              final icon = CategoryData.getIcon(catName);
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                  border: Border.all(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 18,
-                            backgroundColor: isDark
-                                ? AppColors.darkSurfaceVariant
-                                : AppColors.lightSurfaceVariant,
-                            child: Icon(
-                              icon,
-                              size: 17,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  catName,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${(pct * 100).toStringAsFixed(1)}% of total',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            CurrencyFormatter.format(catAmount),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Sleek progress bar sticking directly to the bottom as a border
-                    Container(
-                      height: 2,
-                      width: double.infinity,
-                      color: isDark
-                          ? const Color(0xFF262626)
-                          : const Color(0xFFEEEEEE),
-                      alignment: Alignment.centerLeft,
-                      child: FractionallySizedBox(
-                        widthFactor: pct.clamp(0.0, 1.0),
-                        child: Container(
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
 
           const SizedBox(height: 24),
 

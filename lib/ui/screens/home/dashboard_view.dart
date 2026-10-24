@@ -11,9 +11,11 @@ import '../../../logic/providers/auth_provider.dart';
 import '../../../logic/providers/sync_provider.dart';
 import '../../../logic/providers/theme_provider.dart';
 import '../../../logic/providers/transaction_provider.dart';
+import '../../../data/services/system_notification_service.dart';
 import '../../widgets/common/frosted_header_bar.dart';
 import '../../widgets/common/glass_container.dart';
 import '../../widgets/common/section_header.dart';
+import '../../widgets/common/top_notification.dart';
 import '../../widgets/transaction/transaction_tile.dart';
 
 class DashboardView extends StatefulWidget {
@@ -34,6 +36,25 @@ class _DashboardViewState extends State<DashboardView>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
+
+    // Fire a demo notification on view presentation (both system tray & in-app floating banner)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
+        SystemNotificationService.show(
+          title: 'Hermes Shared Ledger',
+          message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
+        );
+        TopNotificationService.show(
+          context: context,
+          title: 'Hermes Shared Ledger',
+          message: 'Alex added "Dinner at Beachside" (₹1,450.00)',
+          type: TopNotificationType.info,
+          icon: LucideIcons.receipt,
+          duration: const Duration(seconds: 4),
+        );
+      });
+    });
   }
 
   @override
@@ -63,9 +84,8 @@ class _DashboardViewState extends State<DashboardView>
     showModalBottomSheet(
       context: context,
       backgroundColor: theme.colorScheme.surface,
-      
+
       shape: const RoundedRectangleBorder(
-      
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (ctx) {
@@ -75,40 +95,45 @@ class _DashboardViewState extends State<DashboardView>
             decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: isDark ? const Color(0xFFFFFFFF).withValues(alpha: 0.12) : const Color(0xFF000000).withValues(alpha: 0.08),
+                  color: isDark
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.12)
+                      : const Color(0xFF000000).withValues(alpha: 0.08),
                   width: 1,
                 ),
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(30),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(padding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 3),
-                child: 
-
-                Row(
-                  
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Select Account',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                Padding(
+                  padding: EdgeInsetsGeometry.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select Account',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => context.push('/settings/accounts') ,
-                      child: Icon(
-                        LucideIcons.plus,
-                        size: 22,
-                        color: theme.colorScheme.primary,
+                      GestureDetector(
+                        onTap: () => context.push('/settings/accounts'),
+                        child: Icon(
+                          LucideIcons.plus,
+                          size: 22,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
-                    ),
-               
-                  ],
-                ),),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 16),
                 ...auth.accounts.map((acc) {
                   final isActive = acc.id == auth.activeAccountId;
@@ -122,27 +147,40 @@ class _DashboardViewState extends State<DashboardView>
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: isActive
-                              ? theme.colorScheme.primary.withValues(alpha: 0.08)
-                              : (isDark ? const Color(0xFF161616) : const Color(0xFFF3F4F6)),
+                              ? theme.colorScheme.primary.withValues(
+                                  alpha: 0.08,
+                                )
+                              : (isDark
+                                    ? const Color(0xFF161616)
+                                    : const Color(0xFFF3F4F6)),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
                             color: isActive
                                 ? theme.colorScheme.primary
-                                : (isDark ? const Color(0xFF262626) : const Color(0xFFE5E7EB)),
+                                : (isDark
+                                      ? const Color(0xFF262626)
+                                      : const Color(0xFFE5E7EB)),
                             width: isActive ? 1.5 : 1,
                           ),
                         ),
                         child: Row(
                           children: [
                             Icon(
-                              acc.isGroup ? LucideIcons.usersRound : LucideIcons.userRound,
+                              acc.isGroup
+                                  ? LucideIcons.usersRound
+                                  : LucideIcons.userRound,
                               size: 20,
                               color: isActive
                                   ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -152,22 +190,31 @@ class _DashboardViewState extends State<DashboardView>
                                   Text(
                                     acc.nameOrDefault,
                                     style: TextStyle(
-                                      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                                      fontWeight: isActive
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
                                       fontSize: 14,
                                     ),
                                   ),
                                   Text(
-                                    acc.isGroup ? 'Shared Group Ledger' : 'Personal Account',
+                                    acc.isGroup
+                                        ? 'Shared Group Ledger'
+                                        : 'Personal Account',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             if (isActive)
-                              Icon(LucideIcons.check, size: 18, color: theme.colorScheme.primary),
+                              Icon(
+                                LucideIcons.check,
+                                size: 18,
+                                color: theme.colorScheme.primary,
+                              ),
                           ],
                         ),
                       ),
@@ -240,8 +287,8 @@ class _DashboardViewState extends State<DashboardView>
       (sum, tx) => sum + (tx.isIncome ? tx.amount : -tx.amount),
     );
 
-    // Recent 10 transactions
-    final recentTransactions = txProvider.transactions.take(10).toList();
+    // Recent 5 transacions
+    final recentTransactions = txProvider.transactions.take(5).toList();
     final isGroupAccount = authProvider.activeAccount?.isGroup == true;
 
     return Scaffold(
@@ -253,13 +300,18 @@ class _DashboardViewState extends State<DashboardView>
             builder: (context) {
               return GlassContainer(
                 borderRadius: 30,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 onTap: () => _showAccountSwitcher(context),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isGroupAccount ? LucideIcons.usersRound : LucideIcons.userRound,
+                      isGroupAccount
+                          ? LucideIcons.usersRound
+                          : LucideIcons.userRound,
                       size: 19,
                       color: theme.colorScheme.onSurface,
                     ),
@@ -267,7 +319,8 @@ class _DashboardViewState extends State<DashboardView>
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 140),
                       child: Text(
-                        authProvider.activeAccount?.nameOrDefault ?? 'Expense Tracker',
+                        authProvider.activeAccount?.nameOrDefault ??
+                            'Expense Tracker',
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
@@ -285,12 +338,12 @@ class _DashboardViewState extends State<DashboardView>
                   ],
                 ),
               );
-            }
+            },
           ),
         ),
         actions: [
           GlassContainer(
-            shape:pendingCount > 0 ? BoxShape.circle : BoxShape.rectangle,
+            shape: pendingCount > 0 ? BoxShape.circle : BoxShape.rectangle,
             padding: pendingCount > 0
                 ? const EdgeInsets.symmetric(horizontal: 10, vertical: 6)
                 : const EdgeInsets.all(10),
@@ -302,29 +355,27 @@ class _DashboardViewState extends State<DashboardView>
             },
             child: Row(
               children: [
-                
                 RotationTransition(
                   turns: _syncAnimController,
                   child: Icon(
                     LucideIcons.refreshCw,
                     size: 20,
-                color: syncProvider.isSyncing
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withValues(alpha: 0.8),
-              ),
-            ),
+                    color: syncProvider.isSyncing
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                  ),
+                ),
+                if (pendingCount > 0) const SizedBox(width: 6),
                 if (pendingCount > 0)
-                const SizedBox(width: 6),
-                if (pendingCount > 0)
-                   Text(
-                      pendingCount.toString(),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  Text(
+                    pendingCount.toString(),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                  
-         ], )),
-          const SizedBox(width: 10),
+                  ),
+              ],
+            ),
+          ),
           GlassContainer(
             shape: BoxShape.circle,
             padding: const EdgeInsets.all(10),
@@ -360,11 +411,13 @@ class _DashboardViewState extends State<DashboardView>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppConstants.cardRadius),
                   side: BorderSide(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    color: isDark
+                        ? AppColors.darkBorder
+                        : AppColors.lightBorder,
                     width: 1,
                   ),
                 ),
-                color:Theme.of(context).cardTheme.color,
+                color: Theme.of(context).cardTheme.color,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -376,24 +429,37 @@ class _DashboardViewState extends State<DashboardView>
                           Text(
                             'Total Balance',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: isGroupAccount
-                                  ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                  : theme.colorScheme.onSurface.withValues(alpha: 0.06),
+                                  ? theme.colorScheme.primary.withValues(
+                                      alpha: 0.1,
+                                    )
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.06,
+                                    ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  isGroupAccount ? LucideIcons.usersRound : LucideIcons.userRound,
+                                  isGroupAccount
+                                      ? LucideIcons.usersRound
+                                      : LucideIcons.userRound,
                                   size: 12,
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.8,
+                                  ),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -401,7 +467,8 @@ class _DashboardViewState extends State<DashboardView>
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.8),
                                   ),
                                 ),
                               ],
@@ -437,7 +504,9 @@ class _DashboardViewState extends State<DashboardView>
                                     height: 32,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: AppColors.semanticGreen.withValues(alpha: 0.10),
+                                      color: AppColors.semanticGreen.withValues(
+                                        alpha: 0.10,
+                                      ),
                                     ),
                                     child: const Icon(
                                       LucideIcons.trendingUp,
@@ -448,23 +517,28 @@ class _DashboardViewState extends State<DashboardView>
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Income',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.6),
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.6),
+                                              ),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
                                           CurrencyFormatter.format(totalIncome),
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            color: AppColors.semanticGreen,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
-                                          ),
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                color: AppColors.semanticGreen,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -477,7 +551,9 @@ class _DashboardViewState extends State<DashboardView>
                             Container(
                               height: 32,
                               width: 1,
-                              color: isDark ? const Color.fromARGB(255, 111, 111, 111) : const Color.fromARGB(255, 177, 179, 185),
+                              color: isDark
+                                  ? const Color.fromARGB(255, 111, 111, 111)
+                                  : const Color.fromARGB(255, 177, 179, 185),
                             ),
                             // Expense
                             const SizedBox(width: 12),
@@ -490,7 +566,9 @@ class _DashboardViewState extends State<DashboardView>
                                     height: 32,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: AppColors.semanticRed.withValues(alpha: 0.10),
+                                      color: AppColors.semanticRed.withValues(
+                                        alpha: 0.10,
+                                      ),
                                     ),
                                     child: const Icon(
                                       LucideIcons.trendingDown,
@@ -501,23 +579,30 @@ class _DashboardViewState extends State<DashboardView>
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Expense',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.6),
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.6),
+                                              ),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          CurrencyFormatter.format(totalExpense),
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            color: AppColors.semanticRed,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
+                                          CurrencyFormatter.format(
+                                            totalExpense,
                                           ),
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                color: AppColors.semanticRed,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -580,7 +665,10 @@ class _DashboardViewState extends State<DashboardView>
             // Transactions List
             if (recentTransactions.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 32,
+                ),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -588,13 +676,17 @@ class _DashboardViewState extends State<DashboardView>
                       Icon(
                         LucideIcons.inbox,
                         size: 48,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'No transactions yet',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ),
                     ],
@@ -614,48 +706,72 @@ class _DashboardViewState extends State<DashboardView>
     ThemeData theme,
   ) {
     final widgets = <Widget>[];
-    String? lastHeader;
+    final groupedTransactions = <DateTime, List<ExpenseTransaction>>{};
 
-    for (final tx in transactions) {
-      final header = DateFormatter.dayHeader(tx.date);
-      if (header != lastHeader) {
-        lastHeader = header;
-        widgets.add(
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 4),
-            child: Text(
-              header,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                letterSpacing: 0.5,
+    for (final transaction in transactions) {
+      final day = DateFormatter.toDayKey(transaction.date);
+      groupedTransactions.putIfAbsent(day, () => []).add(transaction);
+    }
+
+    for (final entry in groupedTransactions.entries) {
+      final header = DateFormatter.dayHeader(entry.key);
+      final subtotal = entry.value.fold<double>(
+        0.0,
+        (sum, tx) => sum + (tx.isIncome ? tx.amount : -tx.amount),
+      );
+      final isSubtotalPositive = subtotal >= 0;
+      final subtotalColor = isSubtotalPositive
+          ? AppColors.semanticGreen
+          : AppColors.semanticRed;
+
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 12,
+            bottom: 4,
+          ),
+          child: SectionHeader(
+            title: header,
+            trailing: Text(
+              CurrencyFormatter.formatWithSign(
+                subtotal,
+                isIncome: isSubtotalPositive,
+              ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: subtotalColor,
               ),
             ),
           ),
-        );
-      }
-      widgets.add(TransactionTile(transaction: tx));
+        ),
+      );
+      widgets.addAll(
+        entry.value.map((transaction) => TransactionTile(transaction: transaction)),
+      );
     }
 
     return widgets;
   }
 }
 
+
+
 class _QuickStatCard extends StatelessWidget {
   final String title;
   final double netAmount;
 
-  const _QuickStatCard({
-    required this.title,
-    required this.netAmount,
-  });
+  const _QuickStatCard({required this.title, required this.netAmount});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isPositive = netAmount >= 0;
-    final netColor = isPositive ? AppColors.semanticGreen : AppColors.semanticRed;
+    final netColor = isPositive
+        ? AppColors.semanticGreen
+        : AppColors.semanticRed;
 
     return Container(
       padding: const EdgeInsets.all(14),

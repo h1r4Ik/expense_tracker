@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../ui/screens/auth/login_screen.dart';
 import '../../ui/screens/home/home_screen.dart';
@@ -16,8 +17,10 @@ import '../../logic/providers/auth_provider.dart';
 
 GoRouter createAppRouter({
   required AuthProvider authProvider,
+  GlobalKey<NavigatorState>? navigatorKey,
 }) {
   return GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: '/home',
     refreshListenable: authProvider,
     redirect: (context, state) {
@@ -50,9 +53,13 @@ GoRouter createAppRouter({
           transactionId: state.pathParameters['id'],
         ),
       ),
-      StatefulShellRoute.indexedStack(
-        builder: (ctx, state, navigationShell) =>
-            HomeScreen(navigationShell: navigationShell),
+      StatefulShellRoute(
+        builder: (ctx, state, navigationShell) => navigationShell,
+        navigatorContainerBuilder: (ctx, navigationShell, children) =>
+            HomeScreen(
+              navigationShell: navigationShell,
+              children: children,
+            ),
         branches: [
           StatefulShellBranch(
             routes: [
